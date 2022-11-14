@@ -9,6 +9,10 @@ import { User } from '../../../entities';
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private readonly usersRepository: Repository<User>
+    private readonly usersRepository: Repository<User>,
   ) {}
+
+  public create(user: Partial<User>): Promise<User> {
+    return this.usersRepository.save(user);
+  }
 }

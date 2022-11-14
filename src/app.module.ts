@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { CommonModule } from './common/common.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
@@ -17,8 +17,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       database: 'chat_group',
       synchronize: false,
     }),
-    CommonModule, 
-    UserModule
+    CommonModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
