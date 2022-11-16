@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException } from '@nestjs/common';
 
 import { mock } from 'jest-mock-extended';
 import { Chance } from 'chance';
@@ -48,7 +49,20 @@ describe('UserController', () => {
       newUser.state = createUserDtoMock.state;
       newUser.password = chance.string({ length: 20 });
 
+      userServiceMock.findUserByName.mockReturnValue((async () => null)());
       userServiceMock.create.mockReturnValue((async () => newUser)());
+    });
+
+    it('should throw if a user with the same name already exists', async () => {
+      const expectedErrorMessage = `A user with the name ${createUserDtoMock.name} already exists`;
+      userServiceMock.findUserByName.mockReturnValue(
+        (async () => new User())(),
+      );
+
+      const execute = () => controller.create(createUserDtoMock);
+
+      await expect(execute).rejects.toThrowError(BadRequestException);
+      await expect(execute).rejects.toThrow(expectedErrorMessage);
     });
 
     it('should create user', async () => {

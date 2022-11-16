@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies'
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -12,9 +14,11 @@ import { CommonModule } from './common/common.module';
       type: 'postgres',
       host: 'localhost',
       port: 5432,
-      username: 'development',
-      password: 'ZjcVt%Dr1Jyq7Wo5Uaf@',
+      username: 'yxel',
+      password: '.dbs1203?',
       database: 'chat_group',
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      namingStrategy: new SnakeNamingStrategy(),
       synchronize: false,
     }),
     CommonModule,

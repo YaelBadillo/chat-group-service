@@ -8,6 +8,7 @@ import { PasswordEncrypterService } from '../password-encrypter/password-encrypt
 import { UsersService } from '../../../common/repositories';
 import { User } from '../../../entities';
 import { CreateUserDto } from '../../dto';
+import { userMockFactory } from '../../../../test/utils/entity-mocks';
 
 describe('UserService', () => {
   let service: UserService;
@@ -33,6 +34,58 @@ describe('UserService', () => {
     }).compile();
 
     service = module.get<UserService>(UserService);
+  });
+
+  describe('findUserByName method', () => {
+    let userNameMock: string;
+
+    let chance: Chance.Chance;
+
+    beforeEach(() => {
+      chance = new Chance();
+
+      userNameMock = chance.string({ length: 15 });
+
+      usersServiceMock.findOneByName.mockReturnValue(
+        (async () => new User())(),
+      );
+    });
+
+    it('should find user', async () => {
+      const expectedName: string = userNameMock;
+
+      await service.findUserByName(userNameMock);
+
+      expect(usersServiceMock.findOneByName).toBeCalledTimes(1);
+      expect(usersServiceMock.findOneByName).toBeCalledWith(expectedName);
+    });
+
+    it('should return user if it is found', async () => {
+      const userMock: User = userMockFactory(chance);
+      const expectedUser: Partial<User> = {
+        ...userMock,
+        name: userNameMock,
+      };
+      usersServiceMock.findOneByName.mockImplementation(
+        async (name: string) => {
+          userMock.name = name;
+
+          return userMock;
+        },
+      );
+
+      const result: User = await service.findUserByName(userNameMock);
+
+      expect(result).toEqual(expectedUser);
+    });
+
+    it('should return null if the user is not found', async () => {
+      usersServiceMock.findOneByName.mockReturnValue(null);
+
+      const result: User = await service.findUserByName(userNameMock);
+
+      expect(result).toBeNull();
+    });
   });
 
   describe('create method', () => {

@@ -1,11 +1,11 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
+@Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id: string;
 
-  @Column({ type: 'varchar', length: 20 })
+  @Column({ type: 'varchar', length: 30, unique: true })
   name: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
@@ -17,9 +17,9 @@ export class User {
   @Column({ type: 'varchar', length: 255, nullable: true })
   profilePictureKey: string;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', default: () => 'now()' })
   createdAt: Date;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', default: () => 'now()' })
   updatedAt: Date;
 }

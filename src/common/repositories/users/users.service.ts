@@ -15,4 +15,8 @@ export class UsersService {
   public create(user: Partial<User>): Promise<User> {
     return this.usersRepository.save(user);
   }
+
+  public findOneByName(name: string): Promise<User> {
+    return this.usersRepository.findOneBy({ name });
+  }
 }

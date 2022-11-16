@@ -4,7 +4,7 @@ CREATE TYPE "space_type" AS ENUM (
 );
 
 CREATE TYPE "member_role" AS ENUM (
-  'admin',
+  'owner',
   'member'
 );
 
@@ -17,50 +17,68 @@ CREATE TYPE "invitation_status" AS ENUM (
   'cenceled'
 );
 
+CREATE TYPE "request_status" AS ENUM (
+  'sended',
+  'received',
+  'accepted',
+  'rejected',
+  'canceled'
+);
+
 CREATE TABLE "users" (
-  "id" int UNIQUE PRIMARY KEY,
-  "name" varchar(255) NOT NULL,
+  "id" uuid UNIQUE PRIMARY KEY DEFAULT (uuid_generate_v4()),
+  "name" varchar(30) UNIQUE NOT NULL,
   "state" varchar(255),
-  "password" varchar(30) NOT NULL,
+  "password" varchar(255) NOT NULL,
   "profile_picture_key" varchar(255),
-  "created_at" timestamptz NOT NULL DEFAULT 'now()',
-  "updated_at" timestamptz NOT NULL DEFAULT 'now()'
+  "created_at" timestamptz NOT NULL DEFAULT (now()),
+  "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE "channels" (
-  "id" int UNIQUE PRIMARY KEY,
+  "id" uuid UNIQUE PRIMARY KEY DEFAULT (uuid_generate_v4()),
   "name" varchar(30) NOT NULL,
-  "space" type_space NOT NULL DEFAULT 'public',
+  "space" space_type NOT NULL DEFAULT 'public',
   "description" varchar(255),
-  "created_at" timestamptz NOT NULL DEFAULT 'now()',
-  "updated_at" timestamptz NOT NULL DEFAULT 'now()'
+  "owner_id" uuid NOT NULL,
+  "created_by" uuid NOT NULL,
+  "updated_by" uuid NOT NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now()),
+  "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE "members" (
-  "id" int UNIQUE PRIMARY KEY,
-  "user_id" int,
+  "id" uuid UNIQUE PRIMARY KEY DEFAULT (uuid_generate_v4()),
+  "user_id" uuid NOT NULL,
   "role" member_role NOT NULL DEFAULT 'member',
-  "channel_id" int,
+  "channel_id" uuid NOT NULL,
   "invitation_status" invitation_status NOT NULL,
+  "request_status" request_status NOT NULL,
   "deleted" boolean DEFAULT false,
   "expire_at" timestamptz NOT NULL,
-  "created_by" int NOT NULL,
-  "updated_by" int NOT NULL,
-  "created_at" timestamptz NOT NULL DEFAULT 'now()',
-  "updated_at" timestamptz NOT NULL DEFAULT 'now()'
+  "created_by" uuid NOT NULL,
+  "updated_by" uuid NOT NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now()),
+  "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE "messages" (
-  "id" int UNIQUE PRIMARY KEY,
+  "id" uuid UNIQUE PRIMARY KEY DEFAULT (uuid_generate_v4()),
   "content" varchar(255) NOT NULL,
-  "channel_id" int,
-  "member_id" int,
-  "created_at" timestamptz NOT NULL DEFAULT 'now()'
+  "channel_id" uuid NOT NULL,
+  "member_id" uuid NOT NULL,
+  "message_id_to_reply" uuid,
+  "created_at" timestamptz NOT NULL DEFAULT (now()),
+  "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
 COMMENT ON COLUMN "channels"."space" IS 'Type of space';
 
+COMMENT ON COLUMN "channels"."owner_id" IS 'Owner user id';
+
 COMMENT ON COLUMN "members"."role" IS 'Type of member';
+
+ALTER TABLE "channels" ADD FOREIGN KEY ("owner_id") REFERENCES "users" ("id");
 
 ALTER TABLE "members" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
 

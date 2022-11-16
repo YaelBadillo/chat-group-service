@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { CreateUserDto, UpdateUserDto } from '../../dto';
+import { CreateUserDto } from '../../dto';
 import { User } from '../../../entities';
 import { UsersService } from '../../../common/repositories';
 import { PasswordEncrypterService } from '../password-encrypter/password-encrypter.service';
@@ -12,6 +12,10 @@ export class UserService {
     private readonly passwordEncrypterService: PasswordEncrypterService,
   ) {}
 
+  public findUserByName(name: string): Promise<User> {
+    return this.usersService.findOneByName(name);
+  }
+
   public async create(createUserDto: CreateUserDto): Promise<User> {
     const user = this.createUserInstance(createUserDto);
     user.password = await this.passwordEncrypterService.encrypt(user.password);
@@ -19,23 +23,7 @@ export class UserService {
     return this.usersService.create(user);
   }
 
-  findAll() {
-    return `This action returns all user`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
-
-  private createUserInstance(createUserDto: CreateUserDto) {
+  private createUserInstance(createUserDto: CreateUserDto): User {
     const user = new User();
     user.name = createUserDto.name;
     user.state = createUserDto.state;
