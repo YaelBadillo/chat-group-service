@@ -60,13 +60,6 @@ describe('PasswordService', () => {
       jest.spyOn(bcrypt, 'compare').mockImplementation(() => true);
     });
 
-    it('should compare password and hashed password', async () => {
-      await service.decrypt(passwordMock, hashedPasswordMock);
-
-      expect(bcrypt.compare).toBeCalledTimes(1);
-      expect(bcrypt.compare).toBeCalledWith(passwordMock, hashedPasswordMock);
-    });
-
     it('should return true if if password and hashed password are equal', async () => {
       const result: boolean = await service.decrypt(
         passwordMock,

@@ -65,12 +65,6 @@ describe('UserController', () => {
       await expect(execute).rejects.toThrow(expectedErrorMessage);
     });
 
-    it('should create user', async () => {
-      await controller.create(createUserDtoMock);
-
-      expect(userServiceMock.create).toBeCalledTimes(1);
-    });
-
     it('should return the user created', async () => {
       const expectedNewUser = new User();
       expectedNewUser.name = newUser.name;

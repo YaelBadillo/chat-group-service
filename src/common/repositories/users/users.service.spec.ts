@@ -42,39 +42,10 @@ describe('UsersService', () => {
       usersRepositoryMock.save.mockReturnValue((async () => userMock)());
     });
 
-    it('should save the user passed as argument', async () => {
-      await service.create(userMock);
-
-      expect(usersRepositoryMock.save).toBeCalledTimes(1);
-      expect(usersRepositoryMock.save).toBeCalledWith(userMock);
-    });
-
-    it('should return the created user', async () => {
+    it('should return the created/updated user', async () => {
       const result: User = await service.create(userMock);
 
       expect(result).toEqual(userMock);
-    });
-
-    it('should return the updated user', async () => {
-      let updatedUserMock: User = userMockFactory(chance);
-      const expectedUser: User = {
-        ...updatedUserMock,
-        ...userMock,
-      };
-      usersRepositoryMock.save.mockImplementation(
-        async (entity: Partial<User>) => {
-          updatedUserMock = {
-            ...updatedUserMock,
-            ...entity,
-          };
-
-          return updatedUserMock;
-        },
-      );
-
-      const result: User = await service.create(userMock);
-
-      expect(result).toEqual(expectedUser);
     });
   });
 
@@ -91,18 +62,7 @@ describe('UsersService', () => {
       usersRepositoryMock.findOneBy.mockReturnValue((async () => new User())());
     });
 
-    it('should find user that contains the name passed as argument', async () => {
-      const expectedArgument: { name } = {
-        name: nameMock,
-      };
-
-      await service.findOneByName(nameMock);
-
-      expect(usersRepositoryMock.findOneBy).toBeCalledTimes(1);
-      expect(usersRepositoryMock.findOneBy).toBeCalledWith(expectedArgument);
-    });
-
-    it('should return the user if it is found', async () => {
+    it('should return the found user', async () => {
       const userMock: User = userMockFactory(chance);
       userMock.name = nameMock;
       const expectedUser: Partial<User> = {

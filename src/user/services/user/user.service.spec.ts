@@ -51,16 +51,7 @@ describe('UserService', () => {
       );
     });
 
-    it('should find user', async () => {
-      const expectedName: string = userNameMock;
-
-      await service.findUserByName(userNameMock);
-
-      expect(usersServiceMock.findOneByName).toBeCalledTimes(1);
-      expect(usersServiceMock.findOneByName).toBeCalledWith(expectedName);
-    });
-
-    it('should return user if it is found', async () => {
+    it('should return the found user', async () => {
       const userMock: User = userMockFactory(chance);
       const expectedUser: Partial<User> = {
         ...userMock,
