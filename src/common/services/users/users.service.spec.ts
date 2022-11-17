@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { mock } from 'jest-mock-extended';
 import { Chance } from 'chance';
 
-import { UsersService } from '../.';
+import { UsersService } from '..';
 import { User } from '../../../entities';
 import { userMockFactory } from '../../../../test/utils/entity-mocks';
 

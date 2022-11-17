@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
 import * as bcrypt from 'bcrypt';
 
@@ -8,10 +8,18 @@ export class PasswordService {
   private readonly saltRounds = 12;
 
   public encrypt(password: string): Promise<string> {
-    return this.bcrypt.hash(password, this.saltRounds);
+    try {
+      return this.bcrypt.hash(password, this.saltRounds);
+    } catch (_) {
+      throw new InternalServerErrorException('Password could not be encrypted');
+    }
   }
 
   public compare(password: string, hashedPassword: string): Promise<boolean> {
-    return this.bcrypt.compare(password, hashedPassword);
+    try {
+      return this.bcrypt.compare(password, hashedPassword);
+    } catch (_) {
+      throw new InternalServerErrorException('Password could not be verified');
+    }
   }
 }
