@@ -5,7 +5,6 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies'
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from './user/user.module';
 import { CommonModule } from './common/common.module';
 
 @Module({
@@ -22,7 +21,6 @@ import { CommonModule } from './common/common.module';
       synchronize: false,
     }),
     CommonModule,
-    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

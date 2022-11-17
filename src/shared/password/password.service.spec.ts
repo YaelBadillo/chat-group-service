@@ -3,10 +3,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Chance } from 'chance';
 import * as bcrypt from 'bcrypt';
 
-import { PasswordEncrypterService } from '../.';
+import { PasswordService } from './password.service';
 
 describe('PasswordService', () => {
-  let service: PasswordEncrypterService;
+  let service: PasswordService;
 
   let chance: Chance.Chance;
 
@@ -14,10 +14,10 @@ describe('PasswordService', () => {
     chance = new Chance();
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PasswordEncrypterService],
+      providers: [PasswordService],
     }).compile();
 
-    service = module.get<PasswordEncrypterService>(PasswordEncrypterService);
+    service = module.get<PasswordService>(PasswordService);
   });
 
   describe('encrypt method', () => {
@@ -49,7 +49,7 @@ describe('PasswordService', () => {
     });
   });
 
-  describe('decrypt method', () => {
+  describe('compare method', () => {
     let passwordMock: string;
     let hashedPasswordMock: string;
 
@@ -61,7 +61,7 @@ describe('PasswordService', () => {
     });
 
     it('should return true if if password and hashed password are equal', async () => {
-      const result: boolean = await service.decrypt(
+      const result: boolean = await service.compare(
         passwordMock,
         hashedPasswordMock,
       );
@@ -72,7 +72,7 @@ describe('PasswordService', () => {
     it('should return false if password and hashed password are not equal', async () => {
       jest.spyOn(bcrypt, 'compare').mockImplementation(() => false);
 
-      const result: boolean = await service.decrypt(
+      const result: boolean = await service.compare(
         passwordMock,
         hashedPasswordMock,
       );
