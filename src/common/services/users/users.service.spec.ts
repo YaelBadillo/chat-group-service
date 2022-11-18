@@ -8,6 +8,7 @@ import { Chance } from 'chance';
 import { UsersService } from '..';
 import { User } from '../../../entities';
 import { userMockFactory } from '../../../../test/utils/entity-mocks';
+import { InternalServerErrorException } from '@nestjs/common';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -42,6 +43,18 @@ describe('UsersService', () => {
       usersRepositoryMock.save.mockReturnValue((async () => userMock)());
     });
 
+    it('should throw if user could not be created', async () => {
+      const expectedErrorMessage: string = 'User could not be created';
+      usersRepositoryMock.save.mockImplementation(() => {
+        throw new Error();
+      });
+
+      const execute = () => service.create(userMock);
+
+      expect(execute).toThrowError(InternalServerErrorException);
+      expect(execute).toThrow(expectedErrorMessage);
+    });
+
     it('should return the created/updated user', async () => {
       const result: User = await service.create(userMock);
 
@@ -60,6 +73,18 @@ describe('UsersService', () => {
       nameMock = chance.string({ length: 20 });
 
       usersRepositoryMock.findOneBy.mockReturnValue((async () => new User())());
+    });
+
+    it('should throw if user could not be found', async () => {
+      const expectedErrorMessage: string = 'User could not be found';
+      usersRepositoryMock.findOneBy.mockImplementation(() => {
+        throw new Error();
+      });
+
+      const execute = () => service.findOneByName(nameMock);
+
+      expect(execute).toThrowError(InternalServerErrorException);
+      expect(execute).toThrow(expectedErrorMessage);
     });
 
     it('should return the found user', async () => {
