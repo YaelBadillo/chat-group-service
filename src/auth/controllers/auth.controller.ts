@@ -2,7 +2,7 @@ import { Body, Controller, HttpCode, Post, HttpStatus } from '@nestjs/common';
 
 import { AuthService } from '../services';
 import { Public } from '../../common/decorators';
-import { SignUpDto } from '../dto';
+import { SignUpDto, LogInDto } from '../dto';
 import { User } from '../../entities';
 import { LogInResponse } from '../interfaces';
 
@@ -14,13 +14,15 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.CREATED)
   public signUp(@Body() { name, password }: SignUpDto): Promise<User> {
+    console.log('a ' + name);
+    console.log('b ' + password);
     return this.authService.signUp(name, password);
   }
 
   @Post('login')
   @Public()
   @HttpCode(HttpStatus.OK)
-  public logIn(@Body() { name, password }): Promise<LogInResponse> {
+  public logIn(@Body() { name, password }: LogInDto): Promise<LogInResponse> {
     return this.authService.logIn(name, password);
   }
 }

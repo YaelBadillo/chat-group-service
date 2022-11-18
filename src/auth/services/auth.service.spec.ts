@@ -97,7 +97,7 @@ describe('AuthService', () => {
       await expect(execute).rejects.toThrowError(BadRequestException);
     });
 
-    it('should throw if passwords does not match', async () => {
+    it('should throw if passwords do not match', async () => {
       usersServiceMock.findOneByName.mockReturnValue(
         (async () => userMockFactory(chance))(),
       );

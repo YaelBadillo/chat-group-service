@@ -24,12 +24,10 @@ describe('PasswordService', () => {
   describe('encrypt method', () => {
     let passwordMock: string;
     let hashedPasswordMock: string;
-    let saltRoundsMock: number;
 
     beforeEach(() => {
       passwordMock = chance.string({ length: 20 });
       hashedPasswordMock = chance.string({ length: 20 });
-      saltRoundsMock = 12;
 
       jest.spyOn(bcrypt, 'hash').mockImplementation(() => {
         return hashedPasswordMock;
@@ -37,7 +35,7 @@ describe('PasswordService', () => {
     });
 
     it('should throw if password could not be hashed', () => {
-      const expectedErrorMessage: string = 'Password could not be encrypted';
+      const expectedErrorMessage = 'Password could not be encrypted';
       jest.spyOn(bcrypt, 'hash').mockImplementation(() => {
         throw new Error();
       });
@@ -67,7 +65,7 @@ describe('PasswordService', () => {
     });
 
     it('should throw if passwords could not be encrypted', async () => {
-      const expectedErrorMessage: string = 'Passwords could not be compared';
+      const expectedErrorMessage = 'Passwords could not be compared';
       jest.spyOn(bcrypt, 'compare').mockImplementation(() => {
         throw new Error();
       });
@@ -87,7 +85,7 @@ describe('PasswordService', () => {
       expect(result).toBeTruthy();
     });
 
-    it('should return false if passwords does not match', async () => {
+    it('should return false if passwords do not match', async () => {
       jest.spyOn(bcrypt, 'compare').mockImplementation(() => false);
 
       const result: boolean = await service.compare(
