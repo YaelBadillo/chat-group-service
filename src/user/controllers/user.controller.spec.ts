@@ -8,6 +8,7 @@ import { UserController } from './user.controller';
 import { UserService } from '../services';
 import { User } from '../../entities';
 import { userMockFactory } from '../../../test/utils/entity-mocks';
+import { UpdateUserDto } from '../dto';
 
 describe('UserController', () => {
   let controller: UserController;
@@ -41,6 +42,52 @@ describe('UserController', () => {
       const expectedUser: User = { ...userMock };
 
       const result: User = controller.getUser(userMock);
+
+      expect(result).toEqual(expectedUser);
+    });
+  });
+
+  describe('updateUser method', () => {
+    let newNameMock: string;
+    let newStateMock: string;
+    let updateUserDtoMock: UpdateUserDto;
+    let userMock: User;
+
+    beforeEach(() => {
+      newNameMock = chance.name();
+      newStateMock = chance.string({ length: 20 });
+      updateUserDtoMock = {
+        newName: newNameMock,
+        newState: newStateMock,
+      }
+      userMock = userMockFactory(chance);
+    });
+
+    it('should update user', async () => {
+      await controller.updateUser(updateUserDtoMock, userMock);
+
+      expect(userServiceMock.updateUser).toBeCalledTimes(1);
+      expect(userServiceMock.updateUser).toBeCalledWith(
+        userMock, 
+        updateUserDtoMock.newName,
+        updateUserDtoMock.newState,
+      )
+    });
+
+    it('should return the updated user', async () => {
+      const updatedUserMock: User = {
+        ...userMock,
+      }
+      updatedUserMock.name = newNameMock;
+      updatedUserMock.state = newStateMock;
+      const expectedUser: User = {
+        ...updatedUserMock,
+      }
+      userServiceMock.updateUser.mockReturnValue(
+        (async () => updatedUserMock)()
+      );
+
+      const result: User = await controller.updateUser(updateUserDtoMock, userMock);
 
       expect(result).toEqual(expectedUser);
     });
