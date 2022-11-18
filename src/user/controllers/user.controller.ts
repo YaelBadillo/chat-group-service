@@ -3,7 +3,8 @@ import { Body, Controller, Delete, Get, Patch } from '@nestjs/common';
 import { UserService } from '../services';
 import { User } from '../../entities';
 import { UserFromRequest } from '../../common/decorators';
-import { UpdateUserDto } from '../dto';
+import { UpdatePasswordDto, UpdateUserDto } from '../dto';
+import { UpdatePasswordResponse } from '../interfaces';
 
 @Controller('user')
 export class UserController {
@@ -27,7 +28,12 @@ export class UserController {
   }
 
   @Patch('password')
-  public updatePassword() {}
+  public updatePassword(
+    @Body() { oldPassword, newPassword }: UpdatePasswordDto,
+    @UserFromRequest() user: User,
+  ): Promise<UpdatePasswordResponse> {
+    return this.userService.updatePassword(user, oldPassword, newPassword);
+  }
 
   @Delete()
   public deleteUser() {}

@@ -8,7 +8,8 @@ import { UserController } from './user.controller';
 import { UserService } from '../services';
 import { User } from '../../entities';
 import { userMockFactory } from '../../../test/utils/entity-mocks';
-import { UpdateUserDto } from '../dto';
+import { UpdatePasswordDto, UpdateUserDto } from '../dto';
+import { UpdatePasswordResponse } from '../interfaces';
 
 describe('UserController', () => {
   let controller: UserController;
@@ -90,6 +91,51 @@ describe('UserController', () => {
       const result: User = await controller.updateUser(updateUserDtoMock, userMock);
 
       expect(result).toEqual(expectedUser);
+    });
+  });
+
+  describe('updatePassword method', () => {
+    let oldPasswordMock: string;
+    let newPasswordMock: string;
+    let updatePasswordDtoMock: UpdatePasswordDto;
+    let userMock: User;
+
+    beforeEach(() => {
+      oldPasswordMock = chance.string({ length: 15 });
+      newPasswordMock = chance.string({ length: 20 });
+      updatePasswordDtoMock = {
+        oldPassword: oldPasswordMock,
+        newPassword: newPasswordMock,
+        newConfirmPassword: newPasswordMock,
+      };
+      userMock = userMockFactory(chance);
+    });
+
+    it('should update user with the new password', async () => {
+      const expectedUser: User = { ...userMock };
+      const expectedOldPassword: string = oldPasswordMock;
+      const expectedNewPassword: string = newPasswordMock;
+
+      await controller.updatePassword(updatePasswordDtoMock, userMock);
+
+      expect(userServiceMock.updatePassword).toBeCalledTimes(1);
+      expect(userServiceMock.updatePassword).toBeCalledWith(
+        expectedUser,
+        expectedOldPassword,
+        expectedNewPassword,
+      );
+    });
+
+    it('should return an object with a status and a message if password was successfully updated', async () => {
+      const updatePasswordResponseMock: UpdatePasswordResponse = { status: 'ok', message: '' };
+      const expectedUpdatePasswordResponse = { ...updatePasswordResponseMock };
+      userServiceMock.updatePassword.mockReturnValue(
+        (async () => updatePasswordResponseMock)()
+      );
+
+      const result: UpdatePasswordResponse = await controller.updatePassword(updatePasswordDtoMock, userMock);
+
+      expect(result).toEqual(expectedUpdatePasswordResponse);
     });
   });
 });
