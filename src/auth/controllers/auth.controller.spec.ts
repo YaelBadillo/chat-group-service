@@ -47,7 +47,7 @@ describe('AuthController', () => {
       signUpDtoMock = {
         name: nameMock,
         password: passwordMock,
-        confirmPassword: passwordMock,
+        passwordConfirm: passwordMock,
       };
     });
 

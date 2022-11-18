@@ -14,8 +14,6 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.CREATED)
   public signUp(@Body() { name, password }: SignUpDto): Promise<User> {
-    console.log('a ' + name);
-    console.log('b ' + password);
     return this.authService.signUp(name, password);
   }
 
