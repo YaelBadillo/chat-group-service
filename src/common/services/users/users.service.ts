@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
@@ -13,10 +13,18 @@ export class UsersService {
   ) {}
 
   public create(user: Partial<User>): Promise<User> {
-    return this.usersRepository.save(user);
+    try {
+      return this.usersRepository.save(user);
+    } catch (error) {
+      throw new InternalServerErrorException('User could not be created');
+    }
   }
 
   public findOneByName(name: string): Promise<User> {
-    return this.usersRepository.findOneBy({ name });
+    try {
+      return this.usersRepository.findOneBy({ name });
+    } catch (error) {
+      throw new InternalServerErrorException('User could not be found');
+    }
   }
 }

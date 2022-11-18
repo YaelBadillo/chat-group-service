@@ -4,6 +4,7 @@ import { Chance } from 'chance';
 import * as bcrypt from 'bcrypt';
 
 import { PasswordService } from './password.service';
+import { InternalServerErrorException } from '@nestjs/common';
 
 describe('PasswordService', () => {
   let service: PasswordService;
@@ -23,23 +24,26 @@ describe('PasswordService', () => {
   describe('encrypt method', () => {
     let passwordMock: string;
     let hashedPasswordMock: string;
-    let saltRoundsMock: number;
 
     beforeEach(() => {
       passwordMock = chance.string({ length: 20 });
       hashedPasswordMock = chance.string({ length: 20 });
-      saltRoundsMock = 12;
 
       jest.spyOn(bcrypt, 'hash').mockImplementation(() => {
         return hashedPasswordMock;
       });
     });
 
-    it('should encrypt password', async () => {
-      await service.encrypt(passwordMock);
+    it('should throw if password could not be hashed', () => {
+      const expectedErrorMessage = 'Password could not be encrypted';
+      jest.spyOn(bcrypt, 'hash').mockImplementation(() => {
+        throw new Error();
+      });
 
-      expect(bcrypt.hash).toBeCalledTimes(1);
-      expect(bcrypt.hash).toBeCalledWith(passwordMock, saltRoundsMock);
+      const execute = () => service.encrypt(passwordMock);
+
+      expect(execute).toThrowError(InternalServerErrorException);
+      expect(execute).toThrow(expectedErrorMessage);
     });
 
     it('should return hashed password', async () => {
@@ -60,7 +64,19 @@ describe('PasswordService', () => {
       jest.spyOn(bcrypt, 'compare').mockImplementation(() => true);
     });
 
-    it('should return true if if password and hashed password are equal', async () => {
+    it('should throw if passwords could not be encrypted', async () => {
+      const expectedErrorMessage = 'Passwords could not be compared';
+      jest.spyOn(bcrypt, 'compare').mockImplementation(() => {
+        throw new Error();
+      });
+
+      const execute = () => service.compare(passwordMock, hashedPasswordMock);
+
+      expect(execute).toThrowError(InternalServerErrorException);
+      expect(execute).toThrow(expectedErrorMessage);
+    });
+
+    it('should return true if passwords match', async () => {
       const result: boolean = await service.compare(
         passwordMock,
         hashedPasswordMock,
@@ -69,7 +85,7 @@ describe('PasswordService', () => {
       expect(result).toBeTruthy();
     });
 
-    it('should return false if password and hashed password are not equal', async () => {
+    it('should return false if passwords do not match', async () => {
       jest.spyOn(bcrypt, 'compare').mockImplementation(() => false);
 
       const result: boolean = await service.compare(

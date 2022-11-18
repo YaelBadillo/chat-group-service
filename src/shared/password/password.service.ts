@@ -19,7 +19,7 @@ export class PasswordService {
     try {
       return this.bcrypt.compare(password, hashedPassword);
     } catch (_) {
-      throw new InternalServerErrorException('Password could not be verified');
+      throw new InternalServerErrorException('Passwords could not be compared');
     }
   }
 }

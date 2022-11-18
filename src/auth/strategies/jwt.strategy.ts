@@ -17,11 +17,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: { name: string }): Promise<User> {
-    const user: User = await this.usersService.findOneByName(
-      payload.name,
-    );
-
-    if (!user) throw new UnauthorizedException();
+    const user: User = await this.usersService.findOneByName(payload.name);
+    if (!user)
+      throw new UnauthorizedException(
+        'User does not exist, please authenticate',
+      );
 
     return user;
   }
