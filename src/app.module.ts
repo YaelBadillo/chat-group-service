@@ -9,6 +9,7 @@ import { AppService } from './app.service';
 import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { JwtAuthGuard } from './auth/guards';
     }),
     CommonModule,
     AuthModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [
