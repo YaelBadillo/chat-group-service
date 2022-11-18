@@ -5,11 +5,8 @@ import { Chance } from 'chance';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from '../services';
-import { SignUpDto } from '../dto/sign-up.dto';
-import { LogInResponse } from '../../../dist/auth/interfaces/responses.interface';
-import { LogInDto } from '../dto';
-import { userMockFactory } from '../../../test/utils/entity-mocks/user.entity.mock';
-import { User } from 'src/entities';
+import { SignUpResponse, LogInResponse } from '../interfaces';
+import { SignUpDto, LogInDto } from '../dto';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -51,14 +48,19 @@ describe('AuthController', () => {
       };
     });
 
-    it('should return an object with a message if the user was successfully registered', async () => {
-      const userMock: User = userMockFactory(chance);
-      const expectedUser: User = { ...userMock };
-      authServiceMock.signUp.mockReturnValue((async () => userMock)());
+    it('should return an object with a status and a message', async () => {
+      const signUpResponseMock: SignUpResponse = {
+        status: 'ok',
+        message: 'Account has been created',
+      };
+      const expectedSignUpResponseMock: SignUpResponse = {
+        ...signUpResponseMock,
+      }
+      authServiceMock.signUp.mockReturnValue((async () => signUpResponseMock)());
 
       const result = await controller.signUp(signUpDtoMock);
 
-      expect(result).toEqual(expectedUser);
+      expect(result).toEqual(expectedSignUpResponseMock);
     });
   });
 
@@ -76,15 +78,12 @@ describe('AuthController', () => {
       };
     });
 
-    it('should return the user an his access token if user was successfully logged in', async () => {
-      const userMock: Omit<User, 'password'> = userMockFactory(chance);
+    it('should return an object with the access token', async () => {
       const accessTokenMock: string = chance.string({ length: 20 });
       const logInResponseMock: LogInResponse = {
-        user: userMock,
         accessToken: accessTokenMock,
       };
       const expectedLogInResponse: LogInResponse = {
-        user: userMock,
         accessToken: accessTokenMock,
       };
       authServiceMock.logIn.mockReturnValue((async () => logInResponseMock)());

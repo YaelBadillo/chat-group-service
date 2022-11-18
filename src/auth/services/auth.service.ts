@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '../../entities';
 import { UsersService } from '../../common/services';
 import { PasswordService } from '../../shared/password';
-import { LogInResponse } from '../interfaces';
+import { SignUpResponse, LogInResponse } from '../interfaces';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +14,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  public async signUp(name: string, password: string): Promise<User> {
+  public async signUp(name: string, password: string): Promise<SignUpResponse> {
     const user: User = await this.usersService.findOneByName(name);
     if (user)
       throw new BadRequestException(
@@ -25,7 +25,9 @@ export class AuthService {
 
     const userInstance: User = this.createUserInstance(name, hashedPassword);
 
-    return this.usersService.create(userInstance);
+    this.usersService.create(userInstance);
+
+    return { status: 'ok', message: 'Account has been created' };
   }
 
   public async logIn(name: string, password: string): Promise<LogInResponse> {
@@ -41,7 +43,6 @@ export class AuthService {
     const token: string = this.generateToken(user.name, user.updatedAt);
 
     return {
-      user: user,
       accessToken: token,
     };
   }

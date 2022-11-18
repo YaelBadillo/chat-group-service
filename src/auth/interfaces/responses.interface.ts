@@ -1,6 +1,8 @@
-import { User } from '../../entities';
+export interface SignUpResponse {
+  status: string;
+  message: string; 
+}
 
 export interface LogInResponse {
-  user: Omit<User, 'password'>;
   accessToken: string;
 }

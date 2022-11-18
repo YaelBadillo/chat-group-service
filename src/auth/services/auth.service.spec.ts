@@ -10,7 +10,7 @@ import { AuthService } from './auth.service';
 import { PasswordService } from '../../shared/password/password.service';
 import { userMockFactory } from '../../../test/utils/entity-mocks/user.entity.mock';
 import { User } from '../../entities';
-import { LogInResponse } from '../interfaces/responses.interface';
+import { LogInResponse, SignUpResponse } from '../interfaces/responses.interface';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -67,16 +67,18 @@ describe('AuthService', () => {
       await expect(execute).rejects.toThrowError(BadRequestException);
     });
 
-    it('should return registered user', async () => {
-      const userMock: User = userMockFactory(chance);
-      const expectedUser: User = { ...userMock };
+    it('should return an object with a status and a message if the user was successfully created', async () => {
+      const expectedSignUpResponse: SignUpResponse = {
+        status: 'ok',
+        message: 'Account has been created',
+      };
       usersServiceMock.findOneByName.mockReturnValue(null);
       passwordServiceMock.encrypt.mockReturnValue((async () => '')());
-      usersServiceMock.create.mockReturnValue((async () => userMock)());
+      usersServiceMock.create.mockReturnValue((async () => new User())());
 
-      const result: User = await service.signUp(nameMock, passwordMock);
+      const result: SignUpResponse = await service.signUp(nameMock, passwordMock);
 
-      expect(result).toEqual(expectedUser);
+      expect(result).toEqual(expectedSignUpResponse);
     });
   });
 
@@ -108,16 +110,14 @@ describe('AuthService', () => {
       await expect(execute).rejects.toThrowError(BadRequestException);
     });
 
-    it('should return the user logged in and his access token', async () => {
-      const userMock: User = userMockFactory(chance);
-      const tokenMock: string = chance.string({ length: 20 });
+    it('should return an object with the access token if the user was successfully logged', async () => {
+      const accessTokenMock: string = chance.string({ length: 20 });
       const expectedLogInResponse: LogInResponse = {
-        user: { ...userMock },
-        accessToken: tokenMock,
+        accessToken: accessTokenMock,
       };
-      usersServiceMock.findOneByName.mockReturnValue((async () => userMock)());
+      usersServiceMock.findOneByName.mockReturnValue((async () => new User())());
       passwordServiceMock.compare.mockReturnValue((async () => true)());
-      jwtServiceMock.sign.mockReturnValue(tokenMock);
+      jwtServiceMock.sign.mockReturnValue(accessTokenMock);
 
       const result: LogInResponse = await service.logIn(nameMock, passwordMock);
 
