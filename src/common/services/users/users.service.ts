@@ -27,4 +27,13 @@ export class UsersService {
       throw new InternalServerErrorException('User could not be found');
     }
   }
+
+  public async remove(user: User): Promise<User> {
+    try {
+      await this.usersRepository.remove(user);
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException('User could not be deleted');
+    }
+  }
 }

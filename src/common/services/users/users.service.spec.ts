@@ -14,8 +14,12 @@ describe('UsersService', () => {
   let service: UsersService;
   let usersRepositoryMock: jest.Mocked<Repository<User>>;
 
+  let chance: Chance.Chance;
+
   beforeEach(async () => {
     usersRepositoryMock = mock<Repository<User>>();
+
+    chance = new Chance();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -33,18 +37,14 @@ describe('UsersService', () => {
   describe('create method', () => {
     let userMock: jest.Mocked<User>;
 
-    let chance: Chance.Chance;
-
     beforeEach(() => {
-      chance = new Chance();
-
       userMock = mock<User>();
 
       usersRepositoryMock.save.mockReturnValue((async () => userMock)());
     });
 
     it('should throw if user could not be created', async () => {
-      const expectedErrorMessage: string = 'User could not be created';
+      const expectedErrorMessage = 'User could not be created';
       usersRepositoryMock.save.mockImplementation(() => {
         throw new Error();
       });
@@ -65,18 +65,14 @@ describe('UsersService', () => {
   describe('findOneByName method', () => {
     let nameMock: string;
 
-    let chance: Chance.Chance;
-
     beforeEach(() => {
-      chance = new Chance();
-
       nameMock = chance.string({ length: 20 });
 
       usersRepositoryMock.findOneBy.mockReturnValue((async () => new User())());
     });
 
     it('should throw if user could not be found', async () => {
-      const expectedErrorMessage: string = 'User could not be found';
+      const expectedErrorMessage = 'User could not be found';
       usersRepositoryMock.findOneBy.mockImplementation(() => {
         throw new Error();
       });
@@ -106,6 +102,43 @@ describe('UsersService', () => {
       const result: User = await service.findOneByName(nameMock);
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('delete method', () => {
+    let userMock: User;
+
+    beforeEach(() => {
+      userMock = userMockFactory(chance);
+    });
+
+    it('should return the deleted user', async () => {
+      const expectedUser: User = { ...userMock };
+
+      const result: User = await service.remove(userMock);
+
+      expect(result).toEqual(expectedUser);
+    });
+
+    it('should throw if user could not be deleted', async () => {
+      const expectedErrorMessage = 'User could not be deleted';
+      usersRepositoryMock.remove.mockImplementation(() => {
+        throw new Error();
+      });
+
+      const execute = () => service.remove(userMock);
+
+      await expect(execute).rejects.toThrowError(InternalServerErrorException);
+      await expect(execute).rejects.toThrow(expectedErrorMessage);
+    });
+
+    it('should delete the given user', async () => {
+      const expectedUser: User = { ...userMock };
+
+      await service.remove(userMock);
+
+      expect(usersRepositoryMock.remove).toBeCalledTimes(1);
+      expect(usersRepositoryMock.remove).toBeCalledWith(expectedUser);
     });
   });
 });

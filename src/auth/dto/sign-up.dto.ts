@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString, Length, Matches } from 'class-validator';
 
-import { Match } from '../decorators';
+import { Match } from '../../common/decorators';
 
 export class SignUpDto {
   @IsString()
