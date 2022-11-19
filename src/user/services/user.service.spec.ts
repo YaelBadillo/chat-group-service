@@ -129,8 +129,14 @@ describe('UserService', () => {
       expectedUpdatedUser.name = newNameMock;
       expectedUpdatedUser.state = newStateMock;
       delete expectedUpdatedUser.password;
+      serializerServiceMock.deleteProperties.mockReturnValue(
+        (async () => {
+          delete userMock.password;
+          return userMock;
+        })()
+      );
 
-      const result = await service.updateUser(
+      const result: Partial<User> = await service.updateUser(
         userMock,
         newNameMock,
         newStateMock,

@@ -21,7 +21,7 @@ export class UserController {
   public updateUser(
     @Body() { newName, newState }: UpdateUserDto,
     @UserFromRequest() user: User,
-  ): Promise<User> {
+  ): Promise<Partial<User>> {
     return this.userService.updateUser(user, newName, newState);
   }
 

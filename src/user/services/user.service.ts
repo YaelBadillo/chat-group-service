@@ -19,7 +19,7 @@ export class UserService {
     return this.serializerService.deleteProperties<User>(user, properties);
   };
 
-  public async updateUser(user: User, newName: string, newState: string): Promise<User> {
+  public async updateUser(user: User, newName: string, newState: string): Promise<Partial<User>> {
     const namesAreEqual: boolean = user.name === newName;
 
     const existingUser: User = await this.usersService.findOneByName(newName);
@@ -31,9 +31,7 @@ export class UserService {
 
     await this.usersService.create(user);
 
-    delete user.password;
-
-    return user;
+    return this.removePassword(user);
   }
 
   public async updatePassword(

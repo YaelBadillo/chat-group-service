@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { mock } from 'jest-mock-extended';
-
 import { Chance } from 'chance';
 
 import { UserController } from './user.controller';
@@ -93,7 +92,7 @@ describe('UserController', () => {
         (async () => updatedUserMock)()
       );
 
-      const result: User = await controller.updateUser(updateUserDtoMock, userMock);
+      const result: Partial<User> = await controller.updateUser(updateUserDtoMock, userMock);
 
       expect(result).toEqual(expectedUser);
     });
