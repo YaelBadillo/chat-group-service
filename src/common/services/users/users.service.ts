@@ -28,9 +28,9 @@ export class UsersService {
     }
   }
 
-  public async delete(user: User) {
+  public async remove(user: User) {
     try {
-      await this.usersRepository.delete(user)
+      await this.usersRepository.remove(user);
       return user;
     } catch (error) {
       throw new InternalServerErrorException('User could not be deleted');

@@ -115,18 +115,18 @@ describe('UsersService', () => {
     it('should return the deleted user', async () => {
       const expectedUser: User = { ...userMock };
 
-      const result: User = await service.delete(userMock);
+      const result: User = await service.remove(userMock);
 
       expect(result).toEqual(expectedUser);
     });
 
     it('should throw if user could not be deleted', async () => {
       const expectedErrorMessage: string = 'User could not be deleted';
-      usersRepositoryMock.delete.mockImplementation(() => {
+      usersRepositoryMock.remove.mockImplementation(() => {
         throw new Error();
       });
 
-      const execute = () => service.delete(userMock);
+      const execute = () => service.remove(userMock);
 
       await expect(execute).rejects.toThrowError(InternalServerErrorException);
       await expect(execute).rejects.toThrow(expectedErrorMessage);
@@ -135,10 +135,10 @@ describe('UsersService', () => {
     it('should delete the given user', async () => {
       const expectedUser: User = { ...userMock };
 
-      await service.delete(userMock);
+      await service.remove(userMock);
 
-      expect(usersRepositoryMock.delete).toBeCalledTimes(1);
-      expect(usersRepositoryMock.delete).toBeCalledWith(expectedUser);
+      expect(usersRepositoryMock.remove).toBeCalledTimes(1);
+      expect(usersRepositoryMock.remove).toBeCalledWith(expectedUser);
     });
   });
 });
