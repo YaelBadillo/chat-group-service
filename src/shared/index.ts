@@ -1,1 +1,2 @@
-export * from './password/password.module';
+export { PasswordModule } from './password';
+export { SerializerModule } from './serializer';
