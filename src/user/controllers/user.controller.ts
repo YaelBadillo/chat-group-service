@@ -11,9 +11,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  public getUser(
-    @UserFromRequest() user: User,
-  ): Promise<Partial<User>> {
+  public getUser(@UserFromRequest() user: User): Promise<Partial<User>> {
     return this.userService.removePassword(user);
   }
 

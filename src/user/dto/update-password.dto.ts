@@ -14,7 +14,7 @@ export class UpdatePasswordDto {
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
     message: 'newPassword too weak',
   })
-  @DoesNotMatch('oldPassword', { 
+  @DoesNotMatch('oldPassword', {
     message: 'newPassword should be different from oldPassword',
   })
   newPassword: string;

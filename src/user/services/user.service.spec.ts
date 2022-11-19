@@ -22,7 +22,7 @@ describe('UserService', () => {
 
   beforeEach(async () => {
     usersServiceMock = mock<UsersService>();
-    passwordServiceMock = mock<PasswordService>()
+    passwordServiceMock = mock<PasswordService>();
     serializerServiceMock = mock<SerializerService>();
 
     chance = new Chance();
@@ -54,7 +54,9 @@ describe('UserService', () => {
     beforeEach(() => {
       userMock = userMockFactory(chance);
 
-      serializerServiceMock.deleteProperties.mockReturnValue((async () => ({}))())
+      serializerServiceMock.deleteProperties.mockReturnValue(
+        (async () => ({}))(),
+      );
     });
 
     it('should delete password from the user', async () => {
@@ -73,10 +75,12 @@ describe('UserService', () => {
     it('should return the user without the password', async () => {
       const expectedUser: User = { ...userMock };
       delete expectedUser.password;
-      serializerServiceMock.deleteProperties.mockReturnValue((async () => {
-        delete userMock.password;
-        return userMock;
-      })())
+      serializerServiceMock.deleteProperties.mockReturnValue(
+        (async () => {
+          delete userMock.password;
+          return userMock;
+        })(),
+      );
 
       const result: Partial<User> = await service.removePassword(userMock);
 
@@ -98,25 +102,20 @@ describe('UserService', () => {
     });
 
     it('should throw if the name is already taken', async () => {
-      const expectedErrorMessage: string = `${newNameMock} name is already taken. Please choose another`;
-      usersServiceMock.findOneByName.mockReturnValue((async () => new User())())
-
-      const execute = () => service.updateUser(
-        userMock,
-        newNameMock,
-        newStateMock,
+      const expectedErrorMessage = `${newNameMock} name is already taken. Please choose another`;
+      usersServiceMock.findOneByName.mockReturnValue(
+        (async () => new User())(),
       );
+
+      const execute = () =>
+        service.updateUser(userMock, newNameMock, newStateMock);
 
       await expect(execute).rejects.toThrowError(BadRequestException);
       await expect(execute).rejects.toThrow(expectedErrorMessage);
     });
 
     it('should update user', async () => {
-      await service.updateUser(
-        userMock,
-        newNameMock,
-        newStateMock,
-      );
+      await service.updateUser(userMock, newNameMock, newStateMock);
 
       expect(usersServiceMock.create).toBeCalledTimes(1);
       expect(usersServiceMock.create).toBeCalledWith(userMock);
@@ -125,7 +124,7 @@ describe('UserService', () => {
     it('should return the updated user', async () => {
       const expectedUpdatedUser: User = {
         ...userMock,
-      }
+      };
       expectedUpdatedUser.name = newNameMock;
       expectedUpdatedUser.state = newStateMock;
       delete expectedUpdatedUser.password;
@@ -133,7 +132,7 @@ describe('UserService', () => {
         (async () => {
           delete userMock.password;
           return userMock;
-        })()
+        })(),
       );
 
       const result: Partial<User> = await service.updateUser(
@@ -161,7 +160,7 @@ describe('UserService', () => {
 
     it('should return an object with a status and a message if password was successfully updated', async () => {
       const expectedUpdatePasswordResponse: StatusResponse = {
-        status: 'ok', 
+        status: 'ok',
         message: 'Password has been changed',
       };
 
@@ -175,14 +174,11 @@ describe('UserService', () => {
     });
 
     it('should throw if the two old password are not equal', async () => {
-      const expectedErrorMessage: string = 'Incorrect password';
+      const expectedErrorMessage = 'Incorrect password';
       passwordServiceMock.compare.mockReturnValue((async () => false)());
 
-      const execute = () => service.updatePassword(
-        userMock,
-        oldPasswordMock,
-        newPasswordMock,
-      );
+      const execute = () =>
+        service.updatePassword(userMock, oldPasswordMock, newPasswordMock);
 
       await expect(execute).rejects.toThrowError(BadRequestException);
       await expect(execute).rejects.toThrow(expectedErrorMessage);
@@ -191,11 +187,7 @@ describe('UserService', () => {
     it('should hash the new password', async () => {
       const expectedPassword: string = newPasswordMock;
 
-      await service.updatePassword(
-        userMock,
-        oldPasswordMock,
-        newPasswordMock,
-      );
+      await service.updatePassword(userMock, oldPasswordMock, newPasswordMock);
 
       expect(passwordServiceMock.encrypt).toBeCalledTimes(1);
       expect(passwordServiceMock.encrypt).toBeCalledWith(expectedPassword);
@@ -203,20 +195,15 @@ describe('UserService', () => {
 
     it('should update user with the new password', async () => {
       const newHashedPasswordMock: string = chance.string({ length: 20 });
-      const expectedUser: User = { 
+      const expectedUser: User = {
         ...userMock,
         password: newHashedPasswordMock,
       };
       passwordServiceMock.encrypt.mockReturnValue(
-        (async () => newHashedPasswordMock)()
+        (async () => newHashedPasswordMock)(),
       );
 
-
-      await service.updatePassword(
-        userMock,
-        oldPasswordMock,
-        newPasswordMock,
-      );
+      await service.updatePassword(userMock, oldPasswordMock, newPasswordMock);
 
       expect(usersServiceMock.create).toBeCalledTimes(1);
       expect(usersServiceMock.create).toBeCalledWith(expectedUser);
@@ -232,11 +219,11 @@ describe('UserService', () => {
       passwordMock = chance.string({ length: 15 });
 
       passwordServiceMock.compare.mockReturnValue((async () => true)());
-      usersServiceMock.remove.mockReturnValue((async () => userMock)())
+      usersServiceMock.remove.mockReturnValue((async () => userMock)());
     });
 
     it('should throw if password do not match', async () => {
-      const expectedErrorMessage: string = 'Incorrect password';
+      const expectedErrorMessage = 'Incorrect password';
       passwordServiceMock.compare.mockReturnValue((async () => false)());
 
       const execute = () => service.deleteUser(userMock, passwordMock);
@@ -256,11 +243,14 @@ describe('UserService', () => {
 
     it('should return an object with a status and a message if user was successfully deleted', async () => {
       const expectedStatusResponse: StatusResponse = {
-        status: 'ok', 
+        status: 'ok',
         message: 'User has been successfully deleted',
       };
 
-      const result: StatusResponse = await service.deleteUser(userMock, passwordMock);
+      const result: StatusResponse = await service.deleteUser(
+        userMock,
+        passwordMock,
+      );
 
       expect(result).toEqual(expectedStatusResponse);
     });

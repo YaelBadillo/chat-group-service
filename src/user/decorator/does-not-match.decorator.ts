@@ -6,7 +6,10 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
-export function DoesNotMatch(property: string, validationOptions?: ValidationOptions) {
+export function DoesNotMatch(
+  property: string,
+  validationOptions?: ValidationOptions,
+) {
   return (object: any, propertyName: string) => {
     registerDecorator({
       target: object.constructor,
@@ -26,4 +29,3 @@ export class DoesNotMatchConstraint implements ValidatorConstraintInterface {
     return value !== relatedValue;
   }
 }
-

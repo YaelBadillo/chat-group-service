@@ -28,20 +28,19 @@ describe('UserController', () => {
         {
           provide: UserService,
           useValue: userServiceMock,
-        }
+        },
       ],
     }).compile();
 
     controller = module.get<UserController>(UserController);
   });
 
-
   describe('getUser method', () => {
     it('should return user', async () => {
       const userMock: User = userMockFactory(chance);
       const expectedUser: User = { ...userMock };
       delete expectedUser.password;
-      userServiceMock.removePassword.mockImplementation(async (user: User) => { 
+      userServiceMock.removePassword.mockImplementation(async (user: User) => {
         delete user.password;
         return user;
       });
@@ -64,7 +63,7 @@ describe('UserController', () => {
       updateUserDtoMock = {
         newName: newNameMock,
         newState: newStateMock,
-      }
+      };
       userMock = userMockFactory(chance);
     });
 
@@ -73,26 +72,29 @@ describe('UserController', () => {
 
       expect(userServiceMock.updateUser).toBeCalledTimes(1);
       expect(userServiceMock.updateUser).toBeCalledWith(
-        userMock, 
+        userMock,
         updateUserDtoMock.newName,
         updateUserDtoMock.newState,
-      )
+      );
     });
 
     it('should return the updated user', async () => {
       const updatedUserMock: User = {
         ...userMock,
-      }
+      };
       updatedUserMock.name = newNameMock;
       updatedUserMock.state = newStateMock;
       const expectedUser: User = {
         ...updatedUserMock,
-      }
+      };
       userServiceMock.updateUser.mockReturnValue(
-        (async () => updatedUserMock)()
+        (async () => updatedUserMock)(),
       );
 
-      const result: Partial<User> = await controller.updateUser(updateUserDtoMock, userMock);
+      const result: Partial<User> = await controller.updateUser(
+        updateUserDtoMock,
+        userMock,
+      );
 
       expect(result).toEqual(expectedUser);
     });
@@ -134,10 +136,13 @@ describe('UserController', () => {
       const statusResponseMock: StatusResponse = { status: 'ok', message: '' };
       const expectedStatusResponse = { ...statusResponseMock };
       userServiceMock.updatePassword.mockReturnValue(
-        (async () => statusResponseMock)()
+        (async () => statusResponseMock)(),
       );
 
-      const result: StatusResponse = await controller.updatePassword(updatePasswordDtoMock, userMock);
+      const result: StatusResponse = await controller.updatePassword(
+        updatePasswordDtoMock,
+        userMock,
+      );
 
       expect(result).toEqual(expectedStatusResponse);
     });
@@ -165,14 +170,22 @@ describe('UserController', () => {
         expectedUser,
         expectedPassword,
       );
-    })
+    });
 
     it('should return an object with a status and a message if user was successfully deleted', async () => {
-      const statusResponseMock: StatusResponse = { status: 'ok', message: 'User has been successfully deleted' };
+      const statusResponseMock: StatusResponse = {
+        status: 'ok',
+        message: 'User has been successfully deleted',
+      };
       const expectedStatusResponse: StatusResponse = { ...statusResponseMock };
-      userServiceMock.deleteUser.mockReturnValue((async () => statusResponseMock)())
+      userServiceMock.deleteUser.mockReturnValue(
+        (async () => statusResponseMock)(),
+      );
 
-      const result: StatusResponse = await controller.deleteUser(deleteUserDtoMock, userMock);
+      const result: StatusResponse = await controller.deleteUser(
+        deleteUserDtoMock,
+        userMock,
+      );
 
       expect(result).toEqual(expectedStatusResponse);
     });
