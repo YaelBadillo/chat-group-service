@@ -54,7 +54,7 @@ describe('UserService', () => {
       usersServiceMock.create.mockReturnValue((async () => new User())());
     });
 
-    it('should throw if the name is invalid', async () => {
+    it('should throw if the name is already taken', async () => {
       const expectedErrorMessage: string = `${newNameMock} name is already taken. Please choose another`;
       usersServiceMock.findOneByName.mockReturnValue((async () => new User())())
 
