@@ -48,7 +48,16 @@ export class UserService {
     return { status: 'ok', message: 'Password has been changed' };
   }
 
-  public deleteUser() {
+  public async deleteUser(user: User, password: string) {
+    const areEqual: boolean = await this.passwordService.compare(
+      password,
+      user.password,
+    );
+    if(!areEqual)
+      throw new BadRequestException('Incorrect password');
 
+    await this.usersService.delete(user);
+
+    return { status: 'ok', message: 'User has been successfully deleted' };
   }
 }

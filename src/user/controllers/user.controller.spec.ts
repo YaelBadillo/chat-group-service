@@ -8,7 +8,7 @@ import { UserController } from './user.controller';
 import { UserService } from '../services';
 import { User } from '../../entities';
 import { userMockFactory } from '../../../test/utils/entity-mocks';
-import { UpdatePasswordDto, UpdateUserDto } from '../dto';
+import { DeleteUserDto, UpdatePasswordDto, UpdateUserDto } from '../dto';
 import { UpdatePasswordResponse } from '../interfaces';
 
 describe('UserController', () => {
@@ -136,6 +136,41 @@ describe('UserController', () => {
       const result: UpdatePasswordResponse = await controller.updatePassword(updatePasswordDtoMock, userMock);
 
       expect(result).toEqual(expectedUpdatePasswordResponse);
+    });
+  });
+
+  describe('deleteUser', () => {
+    let passwordMock: string;
+    let deleteUserDtoMock: DeleteUserDto;
+    let userMock: User;
+
+    beforeEach(() => {
+      passwordMock = chance.string({ length: 15 });
+      deleteUserDtoMock = { password: passwordMock };
+      userMock = userMockFactory(chance);
+    });
+
+    it('should delete the given user', async () => {
+      const expectedPassword: string = passwordMock;
+      const expectedUser: User = { ...userMock };
+
+      await controller.deleteUser(deleteUserDtoMock, userMock);
+
+      expect(userServiceMock.deleteUser).toBeCalledTimes(1);
+      expect(userServiceMock.deleteUser).toBeCalledWith(
+        expectedUser,
+        expectedPassword,
+      );
+    })
+
+    it('should return an object with a status and a message if user was successfully deleted', async () => {
+      const object = { status: 'ok', message: 'User has been successfully deleted' };
+      const expectedObject = { ...object };
+      userServiceMock.deleteUser.mockReturnValue((async () => object)())
+
+      const result = await controller.deleteUser(deleteUserDtoMock, userMock);
+
+      expect(result).toEqual(expectedObject);
     });
   });
 });

@@ -173,4 +173,42 @@ describe('UserService', () => {
       expect(usersServiceMock.create).toBeCalledWith(expectedUser);
     });
   });
+
+  describe('deleteUser method', () => {
+    let userMock: User;
+    let passwordMock: string;
+
+    beforeEach(() => {
+      userMock = userMockFactory(chance);
+      passwordMock = chance.string({ length: 15 });
+
+      passwordServiceMock.compare.mockReturnValue((async () => true)());
+      usersServiceMock.delete.mockReturnValue((async () => userMock)())
+    });
+
+    it('should throw if password do not match', async () => {
+      const expectedErrorMessage: string = 'Incorrect password';
+      passwordServiceMock.compare.mockReturnValue((async () => false)());
+
+      const execute = () => service.deleteUser(userMock, passwordMock);
+
+      await expect(execute).rejects.toThrowError(BadRequestException);
+      await expect(execute).rejects.toThrow(expectedErrorMessage);
+    });
+
+    it('should delete the given user', async () => {
+      const expectedUser: User = { ...userMock };
+
+      await service.deleteUser(userMock, passwordMock);
+
+      expect(usersServiceMock.delete).toBeCalledTimes(1);
+      expect(usersServiceMock.delete).toBeCalledWith(expectedUser);
+    });
+
+    it('should return an object with a status and a message if user was successfully deleted', async () => {
+      const result = await service.deleteUser(userMock, passwordMock);
+
+      expect(result).toEqual({ status: 'ok', message: 'User has been successfully deleted' });
+    });
+  });
 });

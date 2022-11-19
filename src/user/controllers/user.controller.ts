@@ -3,7 +3,7 @@ import { Body, Controller, Delete, Get, Patch } from '@nestjs/common';
 import { UserService } from '../services';
 import { User } from '../../entities';
 import { UserFromRequest } from '../../common/decorators';
-import { UpdatePasswordDto, UpdateUserDto } from '../dto';
+import { DeleteUserDto, UpdatePasswordDto, UpdateUserDto } from '../dto';
 import { UpdatePasswordResponse } from '../interfaces';
 
 @Controller('user')
@@ -36,5 +36,10 @@ export class UserController {
   }
 
   @Delete()
-  public deleteUser() {}
+  public deleteUser(
+    @Body() { password }: DeleteUserDto,
+    @UserFromRequest() user: User,
+  ) {
+    return this.userService.deleteUser(user, password);
+  }
 }
