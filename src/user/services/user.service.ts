@@ -4,6 +4,7 @@ import { UsersService } from '../../common/services';
 import { User } from '../../entities';
 import { PasswordService } from '../../shared/password';
 import { SerializerService } from '../../shared/serializer';
+import { StatusResponse } from '../../common/interfaces';
 
 @Injectable()
 export class UserService {
@@ -38,7 +39,7 @@ export class UserService {
     user: User,
     oldPassword: string, 
     newPassword: string,
-  ) {
+  ): Promise<StatusResponse> {
     const areEqual: boolean = await this.passwordService.compare(
       oldPassword,
       user.password,
@@ -56,7 +57,7 @@ export class UserService {
     return { status: 'ok', message: 'Password has been changed' };
   }
 
-  public async deleteUser(user: User, password: string) {
+  public async deleteUser(user: User, password: string): Promise<StatusResponse> {
     const areEqual: boolean = await this.passwordService.compare(
       password,
       user.password,

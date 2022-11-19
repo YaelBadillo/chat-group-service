@@ -28,7 +28,7 @@ export class UsersService {
     }
   }
 
-  public async remove(user: User) {
+  public async remove(user: User): Promise<User> {
     try {
       await this.usersRepository.remove(user);
       return user;

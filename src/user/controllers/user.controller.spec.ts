@@ -8,7 +8,7 @@ import { UserService } from '../services';
 import { User } from '../../entities';
 import { userMockFactory } from '../../../test/utils/entity-mocks';
 import { DeleteUserDto, UpdatePasswordDto, UpdateUserDto } from '../dto';
-import { UpdatePasswordResponse } from '../interfaces';
+import { StatusResponse } from '../../common/interfaces';
 
 describe('UserController', () => {
   let controller: UserController;
@@ -131,15 +131,15 @@ describe('UserController', () => {
     });
 
     it('should return an object with a status and a message if password was successfully updated', async () => {
-      const updatePasswordResponseMock: UpdatePasswordResponse = { status: 'ok', message: '' };
-      const expectedUpdatePasswordResponse = { ...updatePasswordResponseMock };
+      const statusResponseMock: StatusResponse = { status: 'ok', message: '' };
+      const expectedStatusResponse = { ...statusResponseMock };
       userServiceMock.updatePassword.mockReturnValue(
-        (async () => updatePasswordResponseMock)()
+        (async () => statusResponseMock)()
       );
 
-      const result: UpdatePasswordResponse = await controller.updatePassword(updatePasswordDtoMock, userMock);
+      const result: StatusResponse = await controller.updatePassword(updatePasswordDtoMock, userMock);
 
-      expect(result).toEqual(expectedUpdatePasswordResponse);
+      expect(result).toEqual(expectedStatusResponse);
     });
   });
 
@@ -168,13 +168,13 @@ describe('UserController', () => {
     })
 
     it('should return an object with a status and a message if user was successfully deleted', async () => {
-      const object = { status: 'ok', message: 'User has been successfully deleted' };
-      const expectedObject = { ...object };
-      userServiceMock.deleteUser.mockReturnValue((async () => object)())
+      const statusResponseMock: StatusResponse = { status: 'ok', message: 'User has been successfully deleted' };
+      const expectedStatusResponse: StatusResponse = { ...statusResponseMock };
+      userServiceMock.deleteUser.mockReturnValue((async () => statusResponseMock)())
 
-      const result = await controller.deleteUser(deleteUserDtoMock, userMock);
+      const result: StatusResponse = await controller.deleteUser(deleteUserDtoMock, userMock);
 
-      expect(result).toEqual(expectedObject);
+      expect(result).toEqual(expectedStatusResponse);
     });
   });
 });

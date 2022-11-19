@@ -4,7 +4,7 @@ import { UserService } from '../services';
 import { User } from '../../entities';
 import { UserFromRequest } from '../../common/decorators';
 import { DeleteUserDto, UpdatePasswordDto, UpdateUserDto } from '../dto';
-import { UpdatePasswordResponse } from '../interfaces';
+import { StatusResponse } from '../../common/interfaces';
 
 @Controller('user')
 export class UserController {
@@ -29,7 +29,7 @@ export class UserController {
   public updatePassword(
     @Body() { oldPassword, newPassword }: UpdatePasswordDto,
     @UserFromRequest() user: User,
-  ): Promise<UpdatePasswordResponse> {
+  ): Promise<StatusResponse> {
     return this.userService.updatePassword(user, oldPassword, newPassword);
   }
 
@@ -37,7 +37,7 @@ export class UserController {
   public deleteUser(
     @Body() { password }: DeleteUserDto,
     @UserFromRequest() user: User,
-  ) {
+  ): Promise<StatusResponse> {
     return this.userService.deleteUser(user, password);
   }
 }

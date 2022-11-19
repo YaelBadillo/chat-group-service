@@ -9,7 +9,7 @@ import { UserService } from './user.service';
 import { User } from '../../entities/user.entity';
 import { userMockFactory } from '../../../test/utils/entity-mocks/user.entity.mock';
 import { PasswordService } from '../../shared/password';
-import { UpdatePasswordResponse } from '../interfaces';
+import { StatusResponse } from '../../common/interfaces';
 import { SerializerService } from '../../shared/serializer';
 
 describe('UserService', () => {
@@ -160,12 +160,12 @@ describe('UserService', () => {
     });
 
     it('should return an object with a status and a message if password was successfully updated', async () => {
-      const expectedUpdatePasswordResponse: UpdatePasswordResponse = {
+      const expectedUpdatePasswordResponse: StatusResponse = {
         status: 'ok', 
         message: 'Password has been changed',
       };
 
-      const result: UpdatePasswordResponse = await service.updatePassword(
+      const result: StatusResponse = await service.updatePassword(
         userMock,
         oldPasswordMock,
         newPasswordMock,
@@ -255,9 +255,14 @@ describe('UserService', () => {
     });
 
     it('should return an object with a status and a message if user was successfully deleted', async () => {
-      const result = await service.deleteUser(userMock, passwordMock);
+      const expectedStatusResponse: StatusResponse = {
+        status: 'ok', 
+        message: 'User has been successfully deleted',
+      };
 
-      expect(result).toEqual({ status: 'ok', message: 'User has been successfully deleted' });
+      const result: StatusResponse = await service.deleteUser(userMock, passwordMock);
+
+      expect(result).toEqual(expectedStatusResponse);
     });
   });
 });
