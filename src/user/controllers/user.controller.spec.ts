@@ -38,12 +38,16 @@ describe('UserController', () => {
 
 
   describe('getUser method', () => {
-    it('should return user', () => {
+    it('should return user', async () => {
       const userMock: User = userMockFactory(chance);
       const expectedUser: User = { ...userMock };
       delete expectedUser.password;
+      userServiceMock.removePassword.mockImplementation(async (user: User) => { 
+        delete user.password;
+        return user;
+      });
 
-      const result: User = controller.getUser(userMock);
+      const result: Partial<User> = await controller.getUser(userMock);
 
       expect(result).toEqual(expectedUser);
     });

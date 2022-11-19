@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Patch, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch } from '@nestjs/common';
 
 import { UserService } from '../services';
 import { User } from '../../entities';
@@ -13,10 +13,8 @@ export class UserController {
   @Get()
   public getUser(
     @UserFromRequest() user: User,
-  ): User {
-    delete user.password;
-
-    return user;
+  ): Promise<Partial<User>> {
+    return this.userService.removePassword(user);
   }
 
   @Patch('update')

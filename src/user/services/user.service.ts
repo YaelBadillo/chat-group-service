@@ -3,13 +3,21 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { UsersService } from '../../common/services';
 import { User } from '../../entities';
 import { PasswordService } from '../../shared/password';
+import { SerializerService } from '../../shared/serializer';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly usersService: UsersService,
-    private readonly passwordService: PasswordService
+    private readonly passwordService: PasswordService,
+    private readonly serializerService: SerializerService,
   ) {}
+
+  public async removePassword(user: User): Promise<Partial<User>> {
+    const properties: string[] = ['password'];
+
+    return this.serializerService.deleteProperties<User>(user, properties);
+  };
 
   public async updateUser(user: User, newName: string, newState: string): Promise<User> {
     const namesAreEqual: boolean = user.name === newName;

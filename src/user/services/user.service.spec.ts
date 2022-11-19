@@ -10,17 +10,20 @@ import { User } from '../../entities/user.entity';
 import { userMockFactory } from '../../../test/utils/entity-mocks/user.entity.mock';
 import { PasswordService } from '../../shared/password';
 import { UpdatePasswordResponse } from '../interfaces';
+import { SerializerService } from '../../shared/serializer';
 
 describe('UserService', () => {
   let service: UserService;
   let usersServiceMock: jest.Mocked<UsersService>;
   let passwordServiceMock: jest.Mocked<PasswordService>;
+  let serializerServiceMock: jest.Mocked<SerializerService>;
 
   let chance: Chance.Chance;
 
   beforeEach(async () => {
     usersServiceMock = mock<UsersService>();
     passwordServiceMock = mock<PasswordService>()
+    serializerServiceMock = mock<SerializerService>();
 
     chance = new Chance();
 
@@ -34,11 +37,51 @@ describe('UserService', () => {
         {
           provide: PasswordService,
           useValue: passwordServiceMock,
-        }
+        },
+        {
+          provide: SerializerService,
+          useValue: serializerServiceMock,
+        },
       ],
     }).compile();
 
     service = module.get<UserService>(UserService);
+  });
+
+  describe('removePassword', () => {
+    let userMock: User;
+
+    beforeEach(() => {
+      userMock = userMockFactory(chance);
+
+      serializerServiceMock.deleteProperties.mockReturnValue((async () => ({}))())
+    });
+
+    it('should delete password from the user', async () => {
+      const expectedUser: User = { ...userMock };
+      const expectedProperties: string[] = ['password'];
+
+      await service.removePassword(userMock);
+
+      expect(serializerServiceMock.deleteProperties).toBeCalledTimes(1);
+      expect(serializerServiceMock.deleteProperties).toBeCalledWith(
+        expectedUser,
+        expectedProperties,
+      );
+    });
+
+    it('should return the user without the password', async () => {
+      const expectedUser: User = { ...userMock };
+      delete expectedUser.password;
+      serializerServiceMock.deleteProperties.mockReturnValue((async () => {
+        delete userMock.password;
+        return userMock;
+      })())
+
+      const result: Partial<User> = await service.removePassword(userMock);
+
+      expect(result).toEqual(expectedUser);
+    });
   });
 
   describe('updateUser', () => {
