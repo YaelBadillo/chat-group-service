@@ -12,8 +12,10 @@ export class UserService {
   ) {}
 
   public async updateUser(user: User, newName: string, newState: string): Promise<User> {
+    const namesAreEqual: boolean = user.name === newName;
+
     const existingUser: User = await this.usersService.findOneByName(newName);
-    if (existingUser)
+    if (existingUser && !namesAreEqual)
       throw new BadRequestException(`${newName} name is already taken. Please choose another`);
 
     user.name = newName;
