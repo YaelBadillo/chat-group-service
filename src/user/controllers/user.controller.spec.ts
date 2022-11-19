@@ -106,7 +106,7 @@ describe('UserController', () => {
       updatePasswordDtoMock = {
         oldPassword: oldPasswordMock,
         newPassword: newPasswordMock,
-        newConfirmPassword: newPasswordMock,
+        newPasswordConfirm: newPasswordMock,
       };
       userMock = userMockFactory(chance);
     });

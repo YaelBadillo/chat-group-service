@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsString, Length, Matches } from 'class-validator';
 import { Match } from '../../common/decorators';
+import { DoesNotMatch } from '../decorator';
 
 export class UpdatePasswordDto {
   @IsString()
@@ -11,13 +12,16 @@ export class UpdatePasswordDto {
   @Length(6, 40)
   @IsNotEmpty()
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-    message: 'password too weak',
+    message: 'newPassword too weak',
+  })
+  @DoesNotMatch('oldPassword', { 
+    message: 'newPassword should be different from oldPassword',
   })
   newPassword: string;
 
   @IsString()
   @Length(6, 40)
   @IsNotEmpty()
-  @Match('password', { message: 'password do not match' })
-  newConfirmPassword: string;
+  @Match('newPassword', { message: 'newPassword do not match' })
+  newPasswordConfirm: string;
 }
