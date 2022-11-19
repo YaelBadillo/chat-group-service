@@ -58,7 +58,7 @@ export class UserService {
     if(!areEqual)
       throw new BadRequestException('Incorrect password');
 
-    await this.usersService.delete(user);
+    await this.usersService.remove(user);
 
     return { status: 'ok', message: 'User has been successfully deleted' };
   }

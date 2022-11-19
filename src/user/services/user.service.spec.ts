@@ -183,7 +183,7 @@ describe('UserService', () => {
       passwordMock = chance.string({ length: 15 });
 
       passwordServiceMock.compare.mockReturnValue((async () => true)());
-      usersServiceMock.delete.mockReturnValue((async () => userMock)())
+      usersServiceMock.remove.mockReturnValue((async () => userMock)())
     });
 
     it('should throw if password do not match', async () => {
@@ -201,8 +201,8 @@ describe('UserService', () => {
 
       await service.deleteUser(userMock, passwordMock);
 
-      expect(usersServiceMock.delete).toBeCalledTimes(1);
-      expect(usersServiceMock.delete).toBeCalledWith(expectedUser);
+      expect(usersServiceMock.remove).toBeCalledTimes(1);
+      expect(usersServiceMock.remove).toBeCalledWith(expectedUser);
     });
 
     it('should return an object with a status and a message if user was successfully deleted', async () => {

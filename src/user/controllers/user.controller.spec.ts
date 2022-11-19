@@ -41,6 +41,7 @@ describe('UserController', () => {
     it('should return user', () => {
       const userMock: User = userMockFactory(chance);
       const expectedUser: User = { ...userMock };
+      delete expectedUser.password;
 
       const result: User = controller.getUser(userMock);
 
