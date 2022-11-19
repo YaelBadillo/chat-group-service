@@ -13,7 +13,7 @@ describe('SerializerService', () => {
   });
 
   describe('deleteProperties method', () => {
-    let entityMock: { name: string, lastName: string, email: string };
+    let entityMock: { name: string; lastName: string; email: string };
     let properties: string[];
 
     beforeEach(() => {
@@ -37,7 +37,10 @@ describe('SerializerService', () => {
       properties = ['lastName', 'email'];
       const expectedEntity = { name: entityMock.name };
 
-      const result = await service.deleteProperties<object>(entityMock, properties);
+      const result = await service.deleteProperties<object>(
+        entityMock,
+        properties,
+      );
 
       expect(result).toEqual(expectedEntity);
     });

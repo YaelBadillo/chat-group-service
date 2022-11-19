@@ -44,7 +44,7 @@ describe('UsersService', () => {
     });
 
     it('should throw if user could not be created', async () => {
-      const expectedErrorMessage: string = 'User could not be created';
+      const expectedErrorMessage = 'User could not be created';
       usersRepositoryMock.save.mockImplementation(() => {
         throw new Error();
       });
@@ -72,7 +72,7 @@ describe('UsersService', () => {
     });
 
     it('should throw if user could not be found', async () => {
-      const expectedErrorMessage: string = 'User could not be found';
+      const expectedErrorMessage = 'User could not be found';
       usersRepositoryMock.findOneBy.mockImplementation(() => {
         throw new Error();
       });
@@ -107,7 +107,7 @@ describe('UsersService', () => {
 
   describe('delete method', () => {
     let userMock: User;
-    
+
     beforeEach(() => {
       userMock = userMockFactory(chance);
     });
@@ -121,7 +121,7 @@ describe('UsersService', () => {
     });
 
     it('should throw if user could not be deleted', async () => {
-      const expectedErrorMessage: string = 'User could not be deleted';
+      const expectedErrorMessage = 'User could not be deleted';
       usersRepositoryMock.remove.mockImplementation(() => {
         throw new Error();
       });
