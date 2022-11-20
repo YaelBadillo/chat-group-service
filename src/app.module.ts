@@ -13,6 +13,7 @@ import { JwtAuthGuard } from './auth/guards';
 import { UserModule } from './user/user.module';
 import { configuration } from './config';
 import { User } from './entities';
+import { ChannelModule } from './channel/channel.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { User } from './entities';
     CommonModule,
     AuthModule,
     UserModule,
+    ChannelModule,
   ],
   controllers: [AppController],
   providers: [
