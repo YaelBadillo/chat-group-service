@@ -67,7 +67,7 @@ describe('ChannelsService', () => {
 
     it('should throw if channel could not be created or updated', async () => {
       const expectedErrorMessage: string = 'Channel could not be created or updated';
-      channelRepositoryMock.save.mockImplementation(() => {
+      channelRepositoryMock.save.mockImplementation(async () => {
         throw new Error();
       });
 

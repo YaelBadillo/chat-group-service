@@ -12,9 +12,10 @@ export class ChannelsService {
     private readonly channelRepository: Repository<Channel>,
   ) {};
 
-  public save(channel: Partial<Channel>): Promise<Channel> {
+  public async save(channel: Partial<Channel>): Promise<Channel> {
     try {
-      return this.channelRepository.save<Partial<Channel>>(channel);
+      const newChannel: Channel = await this.channelRepository.save<Partial<Channel>>(channel);
+      return newChannel;
     } catch (error) {
       throw new InternalServerErrorException('Channel could not be created or updated');
     }
