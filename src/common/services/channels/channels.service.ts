@@ -19,4 +19,13 @@ export class ChannelsService {
       throw new InternalServerErrorException('Channel could not be created or updated');
     }
   }
+
+  public async findOneByName(name: string): Promise<Channel> {
+    try {
+      const channel: Channel = await this.channelRepository.findOneBy({ name });
+      return channel;
+    } catch (error) {
+      throw new InternalServerErrorException('Channel could not be found');
+    }
+  }
 }
