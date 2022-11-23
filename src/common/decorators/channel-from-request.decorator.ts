@@ -8,7 +8,7 @@ import { Channel } from '../../entities';
 import { SpaceType } from '../enums';
 import { RequestWithChannel } from '../interfaces';
 
-export const ChannelRequest = createParamDecorator(
+export const ChannelFromRequest = createParamDecorator(
   (propertyName: string, context: ExecutionContext): Channel | string | Date | SpaceType => {
     const { channel }: RequestWithChannel = context.switchToHttp().getRequest();
     if (!channel)
