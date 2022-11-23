@@ -165,22 +165,17 @@ describe('ChannelService', () => {
       passwordMock = userMock.password;
       deleteChannelDtoMock = { password: passwordMock };
 
-      passwordServiceMock.compare.mockReturnValue(
-        (async () => true)(),
-      );
-      channelsServiceMock.remove.mockReturnValue(
-        (async () => new Channel())()
-      );
+      passwordServiceMock.compare.mockReturnValue((async () => true)());
+      channelsServiceMock.remove.mockReturnValue((async () => new Channel())());
     });
 
     it('should throw if the password do not match', async () => {
-      const expectedErrorMessage: string = 'Incorrect password';
+      const expectedErrorMessage = 'Incorrect password';
       passwordMock = chance.string({ length: 20 });
-      passwordServiceMock.compare.mockReturnValue(
-        (async () => false)(),
-      );
+      passwordServiceMock.compare.mockReturnValue((async () => false)());
 
-      const execute = () => service.delete(userMock, channelMock, deleteChannelDtoMock);
+      const execute = () =>
+        service.delete(userMock, channelMock, deleteChannelDtoMock);
 
       await expect(execute).rejects.toThrowError(BadRequestException);
       await expect(execute).rejects.toThrow(expectedErrorMessage);
@@ -189,11 +184,7 @@ describe('ChannelService', () => {
     it('should remove the given channel', async () => {
       const expectedChannel: Channel = { ...channelMock };
 
-      await service.delete(
-        userMock,
-        channelMock,
-        deleteChannelDtoMock,
-      );
+      await service.delete(userMock, channelMock, deleteChannelDtoMock);
 
       expect(channelsServiceMock.remove).toBeCalledTimes(1);
       expect(channelsServiceMock.remove).toBeCalledWith(expectedChannel);

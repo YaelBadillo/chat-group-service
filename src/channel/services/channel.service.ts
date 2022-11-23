@@ -55,12 +55,14 @@ export class ChannelService {
       deleteChannelDto.password,
       user.password,
     );
-    if (!areEqual) 
-      throw new BadRequestException('Incorrect password');
+    if (!areEqual) throw new BadRequestException('Incorrect password');
 
     await this.channelsService.remove(channel);
 
-    return { status: 'ok', message: `The channel ${channel.name} has been successfully deleted` };
+    return {
+      status: 'ok',
+      message: `The channel ${channel.name} has been successfully deleted`,
+    };
   }
 
   private createChannelInstance(

@@ -159,7 +159,7 @@ describe('ChannelController', () => {
       };
       const expectedResponseStatus: StatusResponse = { ...responseStatusMock };
       channelServiceMock.delete.mockReturnValue(
-        (async () => responseStatusMock)()
+        (async () => responseStatusMock)(),
       );
 
       const result: StatusResponse = await controller.delete(

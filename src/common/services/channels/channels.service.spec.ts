@@ -208,7 +208,7 @@ describe('ChannelsService', () => {
     });
 
     it('should throw if the channel could not be removed', async () => {
-      const expectedMessageError: string = 'Channel could not be removed';
+      const expectedMessageError = 'Channel could not be removed';
       channelRepositoryMock.remove.mockImplementation(async () => {
         throw new Error();
       });

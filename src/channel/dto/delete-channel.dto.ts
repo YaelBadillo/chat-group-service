@@ -4,5 +4,5 @@ export class DeleteChannelDto {
   @IsString()
   @Length(6, 40)
   @IsNotEmpty()
-  password: string; 
+  password: string;
 }

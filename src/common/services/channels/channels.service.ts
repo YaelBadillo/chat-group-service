@@ -57,7 +57,7 @@ export class ChannelsService {
       await this.channelRepository.remove(channel);
       return channel;
     } catch (error) {
-      throw new InternalServerErrorException('Channel could not be removed') 
+      throw new InternalServerErrorException('Channel could not be removed');
     }
   }
 }
