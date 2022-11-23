@@ -1,8 +1,9 @@
-import { Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 import { SpaceType } from '../common/enums';
 import { DatesHelper } from './utils';
 
+@Entity('channels')
 export class Channel extends DatesHelper {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -10,7 +11,7 @@ export class Channel extends DatesHelper {
   @Column({ type: 'varchar', length: 30 })
   name: string;
 
-  @Column({ type: 'enum' })
+  @Column({ type: 'enum', enum: SpaceType })
   space: SpaceType;
 
   @Column({ type: 'varchar', length: 255, nullable: true })

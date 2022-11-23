@@ -28,7 +28,7 @@ export class ChannelController {
     return this.channelService.getAll();
   }
 
-  @Patch()
+  @Patch(':channelId')
   @ChannelOwner()
   public update(
     @ChannelFromRequest() channel: Channel,
