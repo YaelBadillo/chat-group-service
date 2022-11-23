@@ -180,4 +180,43 @@ describe('ChannelsService', () => {
       await expect(execute).rejects.toThrow(expectedErrorMessage);
     });
   });
+
+  describe('remove method', () => {
+    let channelMock: Channel;
+
+    beforeEach(() => {
+      channelMock = channelMockFactory(chance);
+
+      channelRepositoryMock.remove.mockImplementation(jest.fn());
+    });
+
+    it('should delete the given channel', async () => {
+      const expectedChannel: Channel = { ...channelMock };
+
+      await service.remove(channelMock);
+
+      expect(channelRepositoryMock.remove).toBeCalledTimes(1);
+      expect(channelRepositoryMock.remove).toBeCalledWith(expectedChannel);
+    });
+
+    it('should return the removed channel', async () => {
+      const expectedChannel: Channel = { ...channelMock };
+
+      const result: Channel = await service.remove(channelMock);
+
+      expect(result).toEqual(expectedChannel);
+    });
+
+    it('should throw if the channel could not be removed', async () => {
+      const expectedMessageError: string = 'Channel could not be removed';
+      channelRepositoryMock.remove.mockImplementation(async () => {
+        throw new Error();
+      });
+
+      const execute = () => service.remove(channelMock);
+
+      await expect(execute).rejects.toThrowError(InternalServerErrorException);
+      await expect(execute).rejects.toThrow(expectedMessageError);
+    });
+  });
 });

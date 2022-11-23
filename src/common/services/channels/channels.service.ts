@@ -51,4 +51,13 @@ export class ChannelsService {
       throw new InternalServerErrorException('Channel could not be found');
     }
   }
+
+  public async remove(channel: Channel): Promise<Channel> {
+    try {
+      await this.channelRepository.remove(channel);
+      return channel;
+    } catch (error) {
+      throw new InternalServerErrorException('Channel could not be removed') 
+    }
+  }
 }
