@@ -28,6 +28,10 @@ export class ChannelService {
     return this.channelsService.save(channelInstance);
   }
 
+  public getAll(): Promise<Channel[]> {
+    return this.channelsService.findAll();
+  }
+
   private createChannelInstance(
     user: User,
     { name, space, description }: CreateChannelDto,

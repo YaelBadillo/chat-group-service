@@ -76,4 +76,21 @@ describe('ChannelController', () => {
       expect(result).toEqual(expectedChannel);
     });
   });
+
+  describe('getAll method', () => {
+    it('should return all channels', async () => {
+      const channelsMockLength: number = 3;
+      const channelsMock: Channel[] = new Array(channelsMockLength).map(
+        () => channelMockFactory(chance),
+      );
+      const expectedChannels: Channel[] = channelsMock.map((channel) => channel);
+      channelServiceMock.getAll.mockReturnValue(
+        (async () => channelsMock)(),
+      );
+
+      const result: Channel[] = await controller.getAll();
+
+      expect(result).toEqual(expectedChannels);
+    })
+  });
 });

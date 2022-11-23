@@ -1,6 +1,6 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 
-import { UserFromRequest } from '../../common/decorators';
+import { Public, UserFromRequest } from '../../common/decorators';
 import { ChannelService } from '../services';
 import { Channel, User } from '../../entities';
 import { CreateChannelDto } from '../dto';
@@ -15,5 +15,11 @@ export class ChannelController {
     @Body() createChannelDto: CreateChannelDto,
   ): Promise<Channel> {
     return this.channelService.create(user, createChannelDto);
+  }
+
+  @Get()
+  @Public()
+  public getAll(): Promise<Channel[]> {
+    return this.channelService.getAll();
   }
 }

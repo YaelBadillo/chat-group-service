@@ -29,4 +29,13 @@ export class ChannelsService {
       throw new InternalServerErrorException('Channel could not be found');
     }
   }
+
+  public async findAll(): Promise<Channel[]> {
+    try {
+      const channels: Channel[] = await this.channelRepository.find();
+      return channels;
+    } catch (error) {
+      throw new InternalServerErrorException('Channels could not be found');
+    }
+  }
 }

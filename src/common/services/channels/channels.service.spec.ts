@@ -122,4 +122,33 @@ describe('ChannelsService', () => {
       await expect(execute).rejects.toThrow(expectedErrorMessage);
     });
   });
+
+  describe('findAll method', () => {
+    it('should return all channels', async () => {
+      const channelsMockLength: number = 3;
+      const channelsMock: Channel[] = new Array(channelsMockLength).map(
+        () => channelMockFactory(chance),
+      );
+      const expectedChannels: Channel[] = channelsMock.map((channel) => channel);
+      channelRepositoryMock.find.mockReturnValue(
+        (async () => channelsMock)(),
+      );
+
+      const result: Channel[] = await service.findAll();
+
+      expect(result).toEqual(expectedChannels);
+    });
+  });
+
+  it('should throw if channels could not be found', async () => {
+    const expectedMessage: string = 'Channels could not be found';
+    channelRepositoryMock.find.mockImplementation(async () => {
+      throw new Error();
+    });
+
+    const execute = () => service.findAll();
+
+    await expect(execute).rejects.toThrowError(InternalServerErrorException);
+    await expect(execute).rejects.toThrow(expectedMessage);
+  });
 });

@@ -90,4 +90,21 @@ describe('ChannelService', () => {
       expect(result).toEqual(expectedCreatedMock);
     });
   });
+
+  describe('getAll method', () => {
+    it('should return all channels', async () => {
+      const channelsMockLength: number = 3;
+      const channelsMock: Channel[] = new Array(channelsMockLength).map(
+        () => channelMockFactory(chance),
+      );
+      const expectedChannels: Channel[] = channelsMock.map((channel) => channel);
+      channelsServiceMock.findAll.mockReturnValue(
+        (async () => channelsMock)()
+      );
+
+      const result: Channel[] = await service.getAll();
+
+      expect(result).toEqual(expectedChannels);
+    });
+  });
 });
