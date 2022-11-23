@@ -2,7 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 
 import { User, Channel } from '../../entities';
 import { ChannelsService } from '../../common/services';
-import { CreateChannelDto } from '../dto';
+import { CreateChannelDto, UpdateChannelDto } from '../dto';
 
 @Injectable()
 export class ChannelService {
@@ -32,6 +32,12 @@ export class ChannelService {
     return this.channelsService.findAll();
   }
 
+  public update(channel: Channel, updateChannelDto: UpdateChannelDto): Promise<Channel> {
+    this.updateChannelInstance(channel, updateChannelDto);
+
+    return this.channelsService.save(channel);
+  }
+
   private createChannelInstance(
     user: User,
     { name, space, description }: CreateChannelDto,
@@ -45,5 +51,16 @@ export class ChannelService {
     channelInstance.updatedBy = user.id;
 
     return channelInstance;
+  }
+
+  private updateChannelInstance(
+    channel: Channel, 
+    updateChannelDto: UpdateChannelDto,
+  ): Channel {
+    channel.name = updateChannelDto.name;
+    channel.space = updateChannelDto.space;
+    channel.description = updateChannelDto.description;
+
+    return channel;
   }
 }

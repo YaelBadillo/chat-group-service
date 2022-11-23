@@ -12,7 +12,7 @@ import {
   channelMockFactory,
 } from '../../../test/utils/entity-mocks';
 import { ChannelsService } from '../../common/services';
-import { CreateChannelDto } from '../dto';
+import { CreateChannelDto, UpdateChannelDto } from '../dto';
 
 describe('ChannelService', () => {
   let service: ChannelService;
@@ -105,6 +105,43 @@ describe('ChannelService', () => {
       const result: Channel[] = await service.getAll();
 
       expect(result).toEqual(expectedChannels);
+    });
+  });
+
+  describe('update method', () => {
+    let channelMock: Channel;
+    let nameMock: string;
+    let spaceMock: SpaceType;
+    let descriptionMock: string;
+    let updateChannelDtoMock: UpdateChannelDto;
+
+    beforeEach(() => {
+      channelMock = channelMockFactory(chance);
+      nameMock = chance.name();
+      spaceMock = SpaceType.PRIVATE;
+      descriptionMock = chance.string({ length: 15 });
+      updateChannelDtoMock = {
+        name: nameMock,
+        space: spaceMock,
+        description: descriptionMock,
+      };
+    });
+
+    it('should return the updated channel', async () => {
+      const expectedUpdatedChannel: Channel = { ...channelMock };
+      expectedUpdatedChannel.name = nameMock;
+      expectedUpdatedChannel.space = spaceMock;
+      expectedUpdatedChannel.description = descriptionMock;
+      channelsServiceMock.save.mockImplementation(async (channel: Channel) => {
+        return channel;
+      })
+
+      const result: Channel = await service.update(
+        channelMock,
+        updateChannelDtoMock,
+      );
+
+      expect(result).toEqual(expectedUpdatedChannel);
     });
   });
 });

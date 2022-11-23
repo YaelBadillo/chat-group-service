@@ -6,21 +6,24 @@ import { mock } from 'jest-mock-extended';
 import { ChannelController } from './channel.controller';
 import { ChannelService } from '../services';
 import { Channel, User } from '../../entities';
-import { CreateChannelDto } from '../dto';
+import { CreateChannelDto, UpdateChannelDto } from '../dto';
 import {
   userMockFactory,
   channelMockFactory,
 } from '../../../test/utils/entity-mocks';
 import { SpaceType } from '../../common/enums';
+import { ChannelOwnerGuard } from '../../common/guard';
 
 describe('ChannelController', () => {
   let controller: ChannelController;
   let channelServiceMock: jest.Mocked<ChannelService>;
+  let channelOwnerGuardMock: jest.Mocked<ChannelOwnerGuard>
 
   let chance: Chance.Chance;
 
   beforeEach(async () => {
     channelServiceMock = mock<ChannelService>();
+    channelOwnerGuardMock = mock<ChannelOwnerGuard>();
 
     chance = new Chance();
 
@@ -33,7 +36,10 @@ describe('ChannelController', () => {
           useValue: channelServiceMock,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(ChannelOwnerGuard)
+      .useValue(channelOwnerGuardMock)
+      .compile();
 
     controller = module.get<ChannelController>(ChannelController);
   });
@@ -92,5 +98,40 @@ describe('ChannelController', () => {
 
       expect(result).toEqual(expectedChannels);
     })
+  });
+
+  describe('update method', () => {
+    let channelMock: Channel;
+    let nameMock: string;
+    let spaceMock: SpaceType;
+    let descriptionMock: string;
+    let updateChannelDtoMock: UpdateChannelDto;
+
+    beforeEach(() => {
+      channelMock = channelMockFactory(chance);
+      nameMock = chance.name();
+      spaceMock = SpaceType.PRIVATE;
+      descriptionMock = chance.string({ length: 20 });
+      updateChannelDtoMock = {
+        name: nameMock,
+        space: spaceMock,
+        description: descriptionMock,
+      };
+    });
+
+    it('should return the updated channel', async () => {
+      const updatedChannelMock: Channel = channelMockFactory(chance);
+      updatedChannelMock.name = updateChannelDtoMock.name;
+      updatedChannelMock.space = updateChannelDtoMock.space;
+      updatedChannelMock.description = updateChannelDtoMock.description;
+      const expectedUpdatedChannel: Channel = { ...updatedChannelMock };
+      channelServiceMock.update.mockReturnValue(
+        (async () => updatedChannelMock)(),
+      );
+
+      const result: Channel = await controller.update(channelMock, updateChannelDtoMock);
+
+      expect(result).toEqual(expectedUpdatedChannel);
+    });
   });
 });
