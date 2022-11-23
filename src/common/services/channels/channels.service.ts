@@ -38,4 +38,13 @@ export class ChannelsService {
       throw new InternalServerErrorException('Channels could not be found');
     }
   }
+
+  public async findOneById(id: string): Promise<Channel> {
+    try {
+      const channel: Channel = await this.channelRepository.findOneBy({ id })
+      return channel;
+    } catch (error) {
+      throw new InternalServerErrorException('Channel could not be found');
+    }
+  }
 }

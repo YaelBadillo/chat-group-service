@@ -151,4 +151,37 @@ describe('ChannelsService', () => {
       await expect(execute).rejects.toThrow(expectedMessage);
     });
   });
+
+  describe('findOneById method', () => {
+    let idMock: string;
+
+    beforeEach(() => {
+      idMock = chance.string({ length: 20 });
+    });
+
+    it('should return the channel found', async () => {
+      const channelMock: Channel = channelMockFactory(chance);
+      channelMock.id = idMock;
+      const expectedChannel: Channel = { ...channelMock };
+      channelRepositoryMock.findOneBy.mockReturnValue(
+        (async () => channelMock)(),
+      );
+
+      const result: Channel = await service.findOneById(idMock);
+
+      expect(result).toEqual(expectedChannel);
+    });
+
+    it('should throw if channel could not be found', async () => {
+      const expectedErrorMessage: string = 'Channel could not be found';
+      channelRepositoryMock.findOneBy.mockImplementation(async () => {
+        throw new Error();
+      });
+
+      const execute = () => service.findOneById(idMock);
+
+      await expect(execute).rejects.toThrowError(InternalServerErrorException);
+      await expect(execute).rejects.toThrow(expectedErrorMessage);
+    });
+  });
 });
