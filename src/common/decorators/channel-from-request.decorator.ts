@@ -9,7 +9,10 @@ import { SpaceType } from '../enums';
 import { RequestWithChannel } from '../interfaces';
 
 export const ChannelFromRequest = createParamDecorator(
-  (propertyName: string, context: ExecutionContext): Channel | string | Date | SpaceType => {
+  (
+    propertyName: string,
+    context: ExecutionContext,
+  ): Channel | string | Date | SpaceType => {
     const { channel }: RequestWithChannel = context.switchToHttp().getRequest();
     if (!channel)
       throw new InternalServerErrorException('Channel not found (request)');

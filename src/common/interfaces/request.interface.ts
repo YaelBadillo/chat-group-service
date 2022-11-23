@@ -13,7 +13,7 @@ export interface RequestWithChannel extends Request {
   channel: Channel;
 }
 
-export interface ChannelOwnerRequest extends
-  RequestWithUser,
-  RequestWithParams<ParamsWithChannelId>,
-  RequestWithChannel {}
+export interface ChannelOwnerRequest
+  extends RequestWithUser,
+    RequestWithParams<ParamsWithChannelId>,
+    RequestWithChannel {}

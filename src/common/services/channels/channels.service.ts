@@ -10,14 +10,18 @@ export class ChannelsService {
   constructor(
     @InjectRepository(Channel)
     private readonly channelRepository: Repository<Channel>,
-  ) {};
+  ) {}
 
   public async save(channel: Partial<Channel>): Promise<Channel> {
     try {
-      const newChannel: Channel = await this.channelRepository.save<Partial<Channel>>(channel);
+      const newChannel: Channel = await this.channelRepository.save<
+        Partial<Channel>
+      >(channel);
       return newChannel;
     } catch (error) {
-      throw new InternalServerErrorException('Channel could not be created or updated');
+      throw new InternalServerErrorException(
+        'Channel could not be created or updated',
+      );
     }
   }
 
@@ -41,7 +45,7 @@ export class ChannelsService {
 
   public async findOneById(id: string): Promise<Channel> {
     try {
-      const channel: Channel = await this.channelRepository.findOneBy({ id })
+      const channel: Channel = await this.channelRepository.findOneBy({ id });
       return channel;
     } catch (error) {
       throw new InternalServerErrorException('Channel could not be found');

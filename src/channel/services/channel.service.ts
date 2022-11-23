@@ -32,7 +32,10 @@ export class ChannelService {
     return this.channelsService.findAll();
   }
 
-  public update(channel: Channel, updateChannelDto: UpdateChannelDto): Promise<Channel> {
+  public update(
+    channel: Channel,
+    updateChannelDto: UpdateChannelDto,
+  ): Promise<Channel> {
     this.updateChannelInstance(channel, updateChannelDto);
 
     return this.channelsService.save(channel);
@@ -54,7 +57,7 @@ export class ChannelService {
   }
 
   private updateChannelInstance(
-    channel: Channel, 
+    channel: Channel,
     updateChannelDto: UpdateChannelDto,
   ): Channel {
     channel.name = updateChannelDto.name;

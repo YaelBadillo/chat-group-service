@@ -12,13 +12,16 @@ import { Chance } from 'chance';
 import { ChannelOwnerGuard } from './channel-owner.guard';
 import { ChannelsService } from '../../services';
 import { User, Channel } from '../../../entities';
-import { userMockFactory, channelMockFactory } from '../../../../test/utils/entity-mocks';
+import {
+  userMockFactory,
+  channelMockFactory,
+} from '../../../../test/utils/entity-mocks';
 import { ChannelOwnerRequest } from '../../interfaces';
 
 describe('ChannelOwnerGuard', () => {
   let guard: ChannelOwnerGuard;
   let channelsServiceMock: jest.Mocked<ChannelsService>;
-  
+
   let chance: Chance.Chance;
 
   beforeEach(async () => {
@@ -69,10 +72,8 @@ describe('ChannelOwnerGuard', () => {
     });
 
     it('should throw if the channel does not exits', async () => {
-      const expectedErrorMessage: string = 'Channel does not exists';
-      channelsServiceMock.findOneById.mockReturnValue(
-        (async () => null)(),
-      );
+      const expectedErrorMessage = 'Channel does not exists';
+      channelsServiceMock.findOneById.mockReturnValue((async () => null)());
 
       const execute = () => guard.canActivate(contextMock);
 
@@ -81,7 +82,7 @@ describe('ChannelOwnerGuard', () => {
     });
 
     it('should throw if the user does not own the channel', async () => {
-      const expectedErrorMessage: string = 'You are not the owner of this channel';
+      const expectedErrorMessage = 'You are not the owner of this channel';
 
       const execute = () => guard.canActivate(contextMock);
 

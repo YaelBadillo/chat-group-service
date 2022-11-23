@@ -17,7 +17,7 @@ import { ChannelOwnerGuard } from '../../common/guard';
 describe('ChannelController', () => {
   let controller: ChannelController;
   let channelServiceMock: jest.Mocked<ChannelService>;
-  let channelOwnerGuardMock: jest.Mocked<ChannelOwnerGuard>
+  let channelOwnerGuardMock: jest.Mocked<ChannelOwnerGuard>;
 
   let chance: Chance.Chance;
 
@@ -85,19 +85,19 @@ describe('ChannelController', () => {
 
   describe('getAll method', () => {
     it('should return all channels', async () => {
-      const channelsMockLength: number = 3;
-      const channelsMock: Channel[] = new Array(channelsMockLength).map(
-        () => channelMockFactory(chance),
+      const channelsMockLength = 3;
+      const channelsMock: Channel[] = new Array(channelsMockLength).map(() =>
+        channelMockFactory(chance),
       );
-      const expectedChannels: Channel[] = channelsMock.map((channel) => channel);
-      channelServiceMock.getAll.mockReturnValue(
-        (async () => channelsMock)(),
+      const expectedChannels: Channel[] = channelsMock.map(
+        (channel) => channel,
       );
+      channelServiceMock.getAll.mockReturnValue((async () => channelsMock)());
 
       const result: Channel[] = await controller.getAll();
 
       expect(result).toEqual(expectedChannels);
-    })
+    });
   });
 
   describe('update method', () => {
@@ -129,7 +129,10 @@ describe('ChannelController', () => {
         (async () => updatedChannelMock)(),
       );
 
-      const result: Channel = await controller.update(channelMock, updateChannelDtoMock);
+      const result: Channel = await controller.update(
+        channelMock,
+        updateChannelDtoMock,
+      );
 
       expect(result).toEqual(expectedUpdatedChannel);
     });

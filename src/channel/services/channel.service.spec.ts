@@ -93,14 +93,14 @@ describe('ChannelService', () => {
 
   describe('getAll method', () => {
     it('should return all channels', async () => {
-      const channelsMockLength: number = 3;
-      const channelsMock: Channel[] = new Array(channelsMockLength).map(
-        () => channelMockFactory(chance),
+      const channelsMockLength = 3;
+      const channelsMock: Channel[] = new Array(channelsMockLength).map(() =>
+        channelMockFactory(chance),
       );
-      const expectedChannels: Channel[] = channelsMock.map((channel) => channel);
-      channelsServiceMock.findAll.mockReturnValue(
-        (async () => channelsMock)()
+      const expectedChannels: Channel[] = channelsMock.map(
+        (channel) => channel,
       );
+      channelsServiceMock.findAll.mockReturnValue((async () => channelsMock)());
 
       const result: Channel[] = await service.getAll();
 
@@ -134,7 +134,7 @@ describe('ChannelService', () => {
       expectedUpdatedChannel.description = descriptionMock;
       channelsServiceMock.save.mockImplementation(async (channel: Channel) => {
         return channel;
-      })
+      });
 
       const result: Channel = await service.update(
         channelMock,

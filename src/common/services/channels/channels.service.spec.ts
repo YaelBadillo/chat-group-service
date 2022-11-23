@@ -40,9 +40,7 @@ describe('ChannelsService', () => {
     beforeEach(() => {
       channelMock = channelMockFactory(chance);
 
-      channelRepositoryMock.save.mockReturnValue(
-        (async () => new Channel())()
-      );
+      channelRepositoryMock.save.mockReturnValue((async () => new Channel())());
     });
 
     it('should create/update channel', async () => {
@@ -56,9 +54,7 @@ describe('ChannelsService', () => {
 
     it('should return the created/updated channel', async () => {
       const expectedChannel: Channel = { ...channelMock };
-      channelRepositoryMock.save.mockReturnValue(
-        (async () => channelMock)()
-      );
+      channelRepositoryMock.save.mockReturnValue((async () => channelMock)());
 
       const result: Channel = await service.save(channelMock);
 
@@ -66,7 +62,7 @@ describe('ChannelsService', () => {
     });
 
     it('should throw if channel could not be created or updated', async () => {
-      const expectedErrorMessage: string = 'Channel could not be created or updated';
+      const expectedErrorMessage = 'Channel could not be created or updated';
       channelRepositoryMock.save.mockImplementation(async () => {
         throw new Error();
       });
@@ -102,7 +98,7 @@ describe('ChannelsService', () => {
       const channelMock: Channel = channelMockFactory(chance);
       const expectedChannel: Channel = { ...channelMock };
       channelRepositoryMock.findOneBy.mockReturnValue(
-        (async () => channelMock)()
+        (async () => channelMock)(),
       );
 
       const result: Channel = await service.findOneByName(nameMock);
@@ -111,7 +107,7 @@ describe('ChannelsService', () => {
     });
 
     it('should throw if the channel could not be found', async () => {
-      const expectedErrorMessage: string = 'Channel could not be found';
+      const expectedErrorMessage = 'Channel could not be found';
       channelRepositoryMock.findOneBy.mockImplementation(async () => {
         throw new Error();
       });
@@ -125,14 +121,14 @@ describe('ChannelsService', () => {
 
   describe('findAll method', () => {
     it('should return all channels', async () => {
-      const channelsMockLength: number = 3;
-      const channelsMock: Channel[] = new Array(channelsMockLength).map(
-        () => channelMockFactory(chance),
+      const channelsMockLength = 3;
+      const channelsMock: Channel[] = new Array(channelsMockLength).map(() =>
+        channelMockFactory(chance),
       );
-      const expectedChannels: Channel[] = channelsMock.map((channel) => channel);
-      channelRepositoryMock.find.mockReturnValue(
-        (async () => channelsMock)(),
+      const expectedChannels: Channel[] = channelsMock.map(
+        (channel) => channel,
       );
+      channelRepositoryMock.find.mockReturnValue((async () => channelsMock)());
 
       const result: Channel[] = await service.findAll();
 
@@ -140,7 +136,7 @@ describe('ChannelsService', () => {
     });
 
     it('should throw if channels could not be found', async () => {
-      const expectedMessage: string = 'Channels could not be found';
+      const expectedMessage = 'Channels could not be found';
       channelRepositoryMock.find.mockImplementation(async () => {
         throw new Error();
       });
@@ -173,7 +169,7 @@ describe('ChannelsService', () => {
     });
 
     it('should throw if channel could not be found', async () => {
-      const expectedErrorMessage: string = 'Channel could not be found';
+      const expectedErrorMessage = 'Channel could not be found';
       channelRepositoryMock.findOneBy.mockImplementation(async () => {
         throw new Error();
       });
