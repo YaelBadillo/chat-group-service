@@ -138,17 +138,17 @@ describe('ChannelsService', () => {
 
       expect(result).toEqual(expectedChannels);
     });
-  });
 
-  it('should throw if channels could not be found', async () => {
-    const expectedMessage: string = 'Channels could not be found';
-    channelRepositoryMock.find.mockImplementation(async () => {
-      throw new Error();
+    it('should throw if channels could not be found', async () => {
+      const expectedMessage: string = 'Channels could not be found';
+      channelRepositoryMock.find.mockImplementation(async () => {
+        throw new Error();
+      });
+
+      const execute = () => service.findAll();
+
+      await expect(execute).rejects.toThrowError(InternalServerErrorException);
+      await expect(execute).rejects.toThrow(expectedMessage);
     });
-
-    const execute = () => service.findAll();
-
-    await expect(execute).rejects.toThrowError(InternalServerErrorException);
-    await expect(execute).rejects.toThrow(expectedMessage);
   });
 });
