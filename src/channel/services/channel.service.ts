@@ -2,11 +2,16 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 
 import { User, Channel } from '../../entities';
 import { ChannelsService } from '../../common/services';
-import { CreateChannelDto, UpdateChannelDto } from '../dto';
+import { CreateChannelDto, DeleteChannelDto, UpdateChannelDto } from '../dto';
+import { PasswordService } from '../../shared/password';
+import { StatusResponse } from '../../common/interfaces';
 
 @Injectable()
 export class ChannelService {
-  constructor(private readonly channelsService: ChannelsService) {}
+  constructor(
+    private readonly channelsService: ChannelsService,
+    private readonly passwordService: PasswordService,
+  ) {}
 
   public async create(
     user: User,
@@ -39,6 +44,23 @@ export class ChannelService {
     this.updateChannelInstance(channel, updateChannelDto);
 
     return this.channelsService.save(channel);
+  }
+
+  public async delete(
+    user: User,
+    channel: Channel,
+    deleteChannelDto: DeleteChannelDto,
+  ): Promise<StatusResponse> {
+    const areEqual: boolean = await this.passwordService.compare(
+      deleteChannelDto.password,
+      user.password,
+    );
+    if (!areEqual) 
+      throw new BadRequestException('Incorrect password');
+
+    await this.channelsService.remove(channel);
+
+    return { status: 'ok', message: `The channel ${channel.name} has been successfully deleted` };
   }
 
   private createChannelInstance(

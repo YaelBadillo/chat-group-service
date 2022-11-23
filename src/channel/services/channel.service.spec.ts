@@ -12,16 +12,20 @@ import {
   channelMockFactory,
 } from '../../../test/utils/entity-mocks';
 import { ChannelsService } from '../../common/services';
-import { CreateChannelDto, UpdateChannelDto } from '../dto';
+import { CreateChannelDto, DeleteChannelDto, UpdateChannelDto } from '../dto';
+import { PasswordService } from '../../shared/password';
+import { StatusResponse } from '../../common/interfaces';
 
 describe('ChannelService', () => {
   let service: ChannelService;
   let channelsServiceMock: jest.Mocked<ChannelsService>;
+  let passwordServiceMock: jest.Mocked<PasswordService>;
 
   let chance: Chance.Chance;
 
   beforeEach(async () => {
     channelsServiceMock = mock<ChannelsService>();
+    passwordServiceMock = mock<PasswordService>();
 
     chance = new Chance();
 
@@ -31,6 +35,10 @@ describe('ChannelService', () => {
         {
           provide: ChannelsService,
           useValue: channelsServiceMock,
+        },
+        {
+          provide: PasswordService,
+          useValue: passwordServiceMock,
         },
       ],
     }).compile();
@@ -142,6 +150,68 @@ describe('ChannelService', () => {
       );
 
       expect(result).toEqual(expectedUpdatedChannel);
+    });
+  });
+
+  describe('delete method', () => {
+    let userMock: User;
+    let channelMock: Channel;
+    let passwordMock: string;
+    let deleteChannelDtoMock: DeleteChannelDto;
+
+    beforeEach(() => {
+      userMock = userMockFactory(chance);
+      channelMock = channelMockFactory(chance);
+      passwordMock = userMock.password;
+      deleteChannelDtoMock = { password: passwordMock };
+
+      passwordServiceMock.compare.mockReturnValue(
+        (async () => true)(),
+      );
+      channelsServiceMock.remove.mockReturnValue(
+        (async () => new Channel())()
+      );
+    });
+
+    it('should throw if the password do not match', async () => {
+      const expectedErrorMessage: string = 'Incorrect password';
+      passwordMock = chance.string({ length: 20 });
+      passwordServiceMock.compare.mockReturnValue(
+        (async () => false)(),
+      );
+
+      const execute = () => service.delete(userMock, channelMock, deleteChannelDtoMock);
+
+      await expect(execute).rejects.toThrowError(BadRequestException);
+      await expect(execute).rejects.toThrow(expectedErrorMessage);
+    });
+
+    it('should remove the given channel', async () => {
+      const expectedChannel: Channel = { ...channelMock };
+
+      await service.delete(
+        userMock,
+        channelMock,
+        deleteChannelDtoMock,
+      );
+
+      expect(channelsServiceMock.remove).toBeCalledTimes(1);
+      expect(channelsServiceMock.remove).toBeCalledWith(expectedChannel);
+    });
+
+    it('should return an object with a status and a message if the channel was successfully removed', async () => {
+      const expectedStatusResponse: StatusResponse = {
+        status: 'ok',
+        message: `The channel ${channelMock.name} was successfully deleted`,
+      };
+
+      const result: StatusResponse = await service.delete(
+        userMock,
+        channelMock,
+        deleteChannelDtoMock,
+      );
+
+      expect(result).toEqual(expectedStatusResponse);
     });
   });
 });

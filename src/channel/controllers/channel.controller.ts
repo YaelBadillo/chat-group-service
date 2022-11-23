@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Post } from '@nestjs/common';
 
 import {
   ChannelOwner,
@@ -8,7 +8,8 @@ import {
 } from '../../common/decorators';
 import { ChannelService } from '../services';
 import { Channel, User } from '../../entities';
-import { CreateChannelDto, UpdateChannelDto } from '../dto';
+import { CreateChannelDto, UpdateChannelDto, DeleteChannelDto } from '../dto';
+import { StatusResponse } from '../../common/interfaces';
 
 @Controller('channel')
 export class ChannelController {
@@ -35,5 +36,15 @@ export class ChannelController {
     @Body() updateChannelDto: UpdateChannelDto,
   ): Promise<Channel> {
     return this.channelService.update(channel, updateChannelDto);
+  }
+
+  @Delete(':channelId')
+  @ChannelOwner()
+  public delete(
+    @UserFromRequest() user: User,
+    @ChannelFromRequest() channel: Channel,
+    @Body() deleteChannelDto: DeleteChannelDto,
+  ): Promise<StatusResponse> {
+    return this.channelService.delete(user, channel, deleteChannelDto);
   }
 }

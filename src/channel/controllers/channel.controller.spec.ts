@@ -6,13 +6,14 @@ import { mock } from 'jest-mock-extended';
 import { ChannelController } from './channel.controller';
 import { ChannelService } from '../services';
 import { Channel, User } from '../../entities';
-import { CreateChannelDto, UpdateChannelDto } from '../dto';
+import { CreateChannelDto, DeleteChannelDto, UpdateChannelDto } from '../dto';
 import {
   userMockFactory,
   channelMockFactory,
 } from '../../../test/utils/entity-mocks';
 import { SpaceType } from '../../common/enums';
 import { ChannelOwnerGuard } from '../../common/guard';
+import { StatusResponse } from '../../common/interfaces';
 
 describe('ChannelController', () => {
   let controller: ChannelController;
@@ -135,6 +136,39 @@ describe('ChannelController', () => {
       );
 
       expect(result).toEqual(expectedUpdatedChannel);
+    });
+  });
+
+  describe('delete method', () => {
+    let userMock: User;
+    let channelMock: Channel;
+    let passwordMock: string;
+    let deleteChannelDtoMock: DeleteChannelDto;
+
+    beforeEach(() => {
+      userMock = userMockFactory(chance);
+      channelMock = channelMockFactory(chance);
+      passwordMock = userMock.password;
+      deleteChannelDtoMock = { password: passwordMock };
+    });
+
+    it('should return an object with a status and a message if the channel was successfully deleted', async () => {
+      const responseStatusMock: StatusResponse = {
+        status: 'ok',
+        message: `The channel ${channelMock.name} was successfully deleted`,
+      };
+      const expectedResponseStatus: StatusResponse = { ...responseStatusMock };
+      channelServiceMock.delete.mockReturnValue(
+        (async () => responseStatusMock)()
+      );
+
+      const result: StatusResponse = await controller.delete(
+        userMock,
+        channelMock,
+        deleteChannelDtoMock,
+      );
+
+      expect(result).toEqual(expectedResponseStatus);
     });
   });
 });
