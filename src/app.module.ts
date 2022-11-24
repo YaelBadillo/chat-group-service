@@ -15,6 +15,7 @@ import { configuration } from './config';
 import { User, Channel, Message } from './entities';
 import { ChannelModule } from './channel/channel.module';
 import { MessageModule } from './message/message.module';
+import { MessageModule } from './message/message.module';
 
 @Module({
   imports: [
