@@ -223,7 +223,7 @@ describe('ChannelService', () => {
     it('should return an object with a status and a message if the channel was successfully removed', async () => {
       const expectedStatusResponse: StatusResponse = {
         status: 'ok',
-        message: `The channel ${channelMock.name} was successfully deleted`,
+        message: `The channel ${channelMock.name} has been successfully deleted`,
       };
 
       const result: StatusResponse = await service.delete(
