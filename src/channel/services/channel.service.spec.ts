@@ -20,6 +20,7 @@ import { ChannelsService, MembersService } from '../../common/services';
 import { CreateChannelDto, DeleteChannelDto, UpdateChannelDto } from '../dto';
 import { PasswordService } from '../../shared/password';
 import { StatusResponse } from '../../common/interfaces';
+import { CreateChannelResponse } from '../types';
 
 describe('ChannelService', () => {
   let service: ChannelService;
@@ -101,7 +102,7 @@ describe('ChannelService', () => {
         return channel;
       });
 
-      const result = await service.create(userMock, createChannelDtoMock);
+      const result: CreateChannelResponse = await service.create(userMock, createChannelDtoMock);
 
       expect(result.channel).toEqual(expectedCreatedMock);
     });
@@ -122,7 +123,7 @@ describe('ChannelService', () => {
         return member;
       });
 
-      const result = await service.create(userMock, createChannelDtoMock);
+      const result: CreateChannelResponse = await service.create(userMock, createChannelDtoMock);
 
       expect(result.ownerMember).toEqual(expectedMember);
     });

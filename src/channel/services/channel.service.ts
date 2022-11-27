@@ -10,6 +10,7 @@ import {
   MemberRole,
   RequestStatus,
 } from '../../common/enums';
+import { CreateChannelResponse } from '../types';
 
 @Injectable()
 export class ChannelService {
@@ -22,7 +23,7 @@ export class ChannelService {
   public async create(
     user: User,
     createChannelDto: CreateChannelDto,
-  ): Promise<{ channel: Channel; ownerMember: Member }> {
+  ): Promise<CreateChannelResponse> {
     const channel: Channel = await this.channelsService.findOneByName(
       createChannelDto.name,
     );
