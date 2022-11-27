@@ -71,4 +71,35 @@ describe('MembersService', () => {
       await expect(execute).rejects.toThrow(expectedErrorMessage);
     });
   });
+
+  describe('getALlByUserId method', () => {
+    let userIdMock: string;
+    let membersMock: Member[];
+
+    beforeEach(() => {
+      userIdMock = chance.string({ length: 20 });
+      membersMock = new Array(3).map(() => memberMockFactory(chance));
+    });
+
+    it('should return all members with the same userId', async () => {
+      const expectedResult: Member[] = membersMock.map((member) => member);
+      membersRepositoryMock.findBy.mockReturnValue((async () => membersMock)());
+
+      const result: Member[] = await service.getAllByUserId(userIdMock);
+
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('should throw if the members could not be found', async () => {
+      const expectedErrorMessage = 'Members could not be found';
+      membersRepositoryMock.findBy.mockImplementation(async () => {
+        throw new Error();
+      });
+
+      const execute = () => service.getAllByUserId(userIdMock);
+
+      await expect(execute).rejects.toThrowError(InternalServerErrorException);
+      await expect(execute).rejects.toThrow(expectedErrorMessage);
+    });
+  });
 });

@@ -25,4 +25,13 @@ export class MembersService {
       );
     }
   }
+
+  public async getAllByUserId(userId: string): Promise<Member[]> {
+    try {
+      const members: Member[] = await this.membersRepository.findBy({ userId });
+      return members;
+    } catch (error) {
+      throw new InternalServerErrorException('Members could not be found');
+    }
+  }
 }
