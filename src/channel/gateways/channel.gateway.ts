@@ -12,6 +12,7 @@ import { Socket } from 'socket.io';
 
 import { MembersService } from '../../common/services';
 import { Member } from '../../entities';
+import { WsJwtAuth } from '../../common/decorators';
 
 @WebSocketGateway({ namespace: 'channel' })
 export class ChannelGateway
@@ -38,10 +39,13 @@ export class ChannelGateway
   public handleDisconnect(client: Socket) {}
 
   @SubscribeMessage('message')
+  @WsJwtAuth()
   public handleMessage(
     @MessageBody() data: { channelId: string, content: string },
     @ConnectedSocket() client: Socket,
   ) {
-    client.to(data.channelId).emit(data.content)
+    const message = { content: data.content, userName: client.data.user.name };
+
+    client.to(data.channelId).emit(JSON.stringify(message));
   }
 }
