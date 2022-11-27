@@ -1,22 +1,28 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 
-import { User, Channel } from '../../entities';
-import { ChannelsService } from '../../common/services';
+import { User, Channel, Member } from '../../entities';
+import { ChannelsService, MembersService } from '../../common/services';
 import { CreateChannelDto, DeleteChannelDto, UpdateChannelDto } from '../dto';
 import { PasswordService } from '../../shared/password';
 import { StatusResponse } from '../../common/interfaces';
+import {
+  InvitationStatus,
+  MemberRole,
+  RequestStatus,
+} from '../../common/enums';
 
 @Injectable()
 export class ChannelService {
   constructor(
     private readonly channelsService: ChannelsService,
+    private readonly membersService: MembersService,
     private readonly passwordService: PasswordService,
   ) {}
 
   public async create(
     user: User,
     createChannelDto: CreateChannelDto,
-  ): Promise<Channel> {
+  ): Promise<{ channel: Channel; ownerMember: Member }> {
     const channel: Channel = await this.channelsService.findOneByName(
       createChannelDto.name,
     );
@@ -30,7 +36,15 @@ export class ChannelService {
       createChannelDto,
     );
 
-    return this.channelsService.save(channelInstance);
+    const newChannel: Channel = await this.channelsService.save(
+      channelInstance,
+    );
+
+    const memberInstance: Member = this.createMemberInstance(user, newChannel);
+
+    const ownerMember: Member = await this.membersService.save(memberInstance);
+
+    return { channel: newChannel, ownerMember };
   }
 
   public getAll(): Promise<Channel[]> {
@@ -78,6 +92,20 @@ export class ChannelService {
     channelInstance.updatedBy = user.id;
 
     return channelInstance;
+  }
+
+  private createMemberInstance(user: User, newChannel: Channel): Member {
+    const memberInstance: Member = new Member();
+    memberInstance.userId = user.id;
+    memberInstance.role = MemberRole.OWNER;
+    memberInstance.channelId = newChannel.id;
+    memberInstance.invitationStatus = InvitationStatus.ACCEPTED;
+    memberInstance.requestStatus = RequestStatus.ACCEPTED;
+    memberInstance.deleted = false;
+    memberInstance.createdBy = user.id;
+    memberInstance.updatedBy = user.id;
+
+    return memberInstance;
   }
 
   private updateChannelInstance(

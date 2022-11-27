@@ -5,13 +5,18 @@ import { Chance } from 'chance';
 import { mock } from 'jest-mock-extended';
 
 import { ChannelService } from './channel.service';
-import { User, Channel } from '../../entities';
-import { SpaceType } from '../../common/enums';
+import { User, Channel, Member } from '../../entities';
+import {
+  InvitationStatus,
+  MemberRole,
+  RequestStatus,
+  SpaceType,
+} from '../../common/enums';
 import {
   userMockFactory,
   channelMockFactory,
 } from '../../../test/utils/entity-mocks';
-import { ChannelsService } from '../../common/services';
+import { ChannelsService, MembersService } from '../../common/services';
 import { CreateChannelDto, DeleteChannelDto, UpdateChannelDto } from '../dto';
 import { PasswordService } from '../../shared/password';
 import { StatusResponse } from '../../common/interfaces';
@@ -19,12 +24,14 @@ import { StatusResponse } from '../../common/interfaces';
 describe('ChannelService', () => {
   let service: ChannelService;
   let channelsServiceMock: jest.Mocked<ChannelsService>;
+  let membersServiceMock: jest.Mocked<MembersService>;
   let passwordServiceMock: jest.Mocked<PasswordService>;
 
   let chance: Chance.Chance;
 
   beforeEach(async () => {
     channelsServiceMock = mock<ChannelsService>();
+    membersServiceMock = mock<MembersService>();
     passwordServiceMock = mock<PasswordService>();
 
     chance = new Chance();
@@ -39,6 +46,10 @@ describe('ChannelService', () => {
         {
           provide: PasswordService,
           useValue: passwordServiceMock,
+        },
+        {
+          provide: MembersService,
+          useValue: membersServiceMock,
         },
       ],
     }).compile();
@@ -90,12 +101,30 @@ describe('ChannelService', () => {
         return channel;
       });
 
-      const result: Channel = await service.create(
-        userMock,
-        createChannelDtoMock,
-      );
+      const result = await service.create(userMock, createChannelDtoMock);
 
-      expect(result).toEqual(expectedCreatedMock);
+      expect(result.channel).toEqual(expectedCreatedMock);
+    });
+
+    it('should return the owner member', async () => {
+      const channelMock: Channel = channelMockFactory(chance);
+      const expectedMember: Member = new Member();
+      expectedMember.userId = userMock.id;
+      expectedMember.role = MemberRole.OWNER;
+      expectedMember.channelId = channelMock.id;
+      expectedMember.invitationStatus = InvitationStatus.ACCEPTED;
+      expectedMember.requestStatus = RequestStatus.ACCEPTED;
+      expectedMember.deleted = false;
+      expectedMember.createdBy = userMock.id;
+      expectedMember.updatedBy = userMock.id;
+      channelsServiceMock.save.mockReturnValue((async () => channelMock)());
+      membersServiceMock.save.mockImplementation(async (member: Member) => {
+        return member;
+      });
+
+      const result = await service.create(userMock, createChannelDtoMock);
+
+      expect(result.ownerMember).toEqual(expectedMember);
     });
   });
 
