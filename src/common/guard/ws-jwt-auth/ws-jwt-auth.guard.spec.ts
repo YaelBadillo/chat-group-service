@@ -11,6 +11,7 @@ import { Socket } from 'socket.io';
 import { WsJwtAuthGuard } from './ws-jwt-auth.guard';
 import { UsersService } from '../../services';
 import { User } from '../../../entities';
+import { userMockFactory } from '../../../../test/utils/entity-mocks';
 
 describe('WsJwtAuthGuard', () => {
   let guard: WsJwtAuthGuard;
@@ -104,6 +105,18 @@ describe('WsJwtAuthGuard', () => {
 
       await expect(execute).rejects.toThrowError(UnauthorizedException);
       await expect(execute).rejects.toThrow(expectedErrorMessage);
+    });
+
+    it('should attach user the socket', async () => {
+      const userMock: User = userMockFactory(chance);
+      const expectedUser: User = { ...userMock };
+      usersServiceMock.findOneByName.mockReturnValue(
+        (async () => userMock)(),
+      );
+
+      await guard.canActivate(contextMock);
+
+      expect(socketMock.data.user).toEqual(expectedUser);
     });
 
     it('should return true if can permission', async () => {
