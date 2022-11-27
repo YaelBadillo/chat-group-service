@@ -10,6 +10,7 @@ import { ChannelService } from '../services';
 import { Channel, User } from '../../entities';
 import { CreateChannelDto, UpdateChannelDto, DeleteChannelDto } from '../dto';
 import { StatusResponse } from '../../common/interfaces';
+import { CreateChannelResponse } from '../types';
 
 @Controller('channel')
 export class ChannelController {
@@ -19,7 +20,7 @@ export class ChannelController {
   public createChannel(
     @UserFromRequest() user: User,
     @Body() createChannelDto: CreateChannelDto,
-  ): Promise<Channel> {
+  ): Promise<CreateChannelResponse> {
     return this.channelService.create(user, createChannelDto);
   }
 

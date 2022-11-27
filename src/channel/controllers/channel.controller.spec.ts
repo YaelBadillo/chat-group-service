@@ -5,15 +5,17 @@ import { mock } from 'jest-mock-extended';
 
 import { ChannelController } from './channel.controller';
 import { ChannelService } from '../services';
-import { Channel, User } from '../../entities';
+import { Channel, Member, User } from '../../entities';
 import { CreateChannelDto, DeleteChannelDto, UpdateChannelDto } from '../dto';
 import {
   userMockFactory,
   channelMockFactory,
+  memberMockFactory,
 } from '../../../test/utils/entity-mocks';
 import { SpaceType } from '../../common/enums';
 import { ChannelOwnerGuard } from '../../common/guard';
 import { StatusResponse } from '../../common/interfaces';
+import { CreateChannelResponse } from '../types';
 
 describe('ChannelController', () => {
   let controller: ChannelController;
@@ -66,21 +68,25 @@ describe('ChannelController', () => {
 
     it('should return the created channel', async () => {
       const channelMock: Channel = channelMockFactory(chance);
-      channelMock.name = nameMock;
-      channelMock.space = spaceMock;
-      channelMock.description = descriptionMock;
-      channelMock.ownerId = userMock.id;
-      channelMock.createdBy = userMock.id;
-      channelMock.updatedBy = userMock.id;
-      const expectedChannel: Channel = { ...channelMock };
-      channelServiceMock.create.mockReturnValue((async () => channelMock)());
+      const memberMock: Member = memberMockFactory(chance);
+      const createChannelResponseMock: CreateChannelResponse = {
+        channel: channelMock,
+        ownerMember: memberMock,
+      };
+      const expectedCreateChannelResponse: CreateChannelResponse = {
+        channel: { ...channelMock },
+        ownerMember: { ...memberMock },
+      };
+      channelServiceMock.create.mockReturnValue(
+        (async () => createChannelResponseMock)(),
+      );
 
-      const result: Channel = await controller.createChannel(
+      const result: CreateChannelResponse = await controller.createChannel(
         userMock,
         createChannelDtoMock,
       );
 
-      expect(result).toEqual(expectedChannel);
+      expect(result).toEqual(expectedCreateChannelResponse);
     });
   });
 
