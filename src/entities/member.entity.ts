@@ -26,7 +26,7 @@ export class Member extends DatesHelper {
   @Column({ type: 'boolean' })
   deleted: boolean;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true })
   expireAt: Date;
 
   @Column({ type: 'varchar' })
