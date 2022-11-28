@@ -100,8 +100,4 @@ describe('ChannelGateway', () => {
       );
     });
   });
-
-  describe('handleMessage method', () => {
-
-  });
 });
