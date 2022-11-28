@@ -1,16 +1,16 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 
-import { User, Channel, Member } from '../../entities';
-import { ChannelsService, MembersService } from '../../common/services';
-import { CreateChannelDto, DeleteChannelDto, UpdateChannelDto } from '../dto';
-import { PasswordService } from '../../shared/password';
-import { StatusResponse } from '../../common/interfaces';
+import { User, Channel, Member } from '../../../entities';
+import { ChannelsService, MembersService } from '../../../common/services';
+import { CreateChannelDto, DeleteChannelDto, UpdateChannelDto } from '../../dto';
+import { PasswordService } from '../../../shared/password';
+import { StatusResponse } from '../../../common/interfaces';
 import {
   InvitationStatus,
   MemberRole,
   RequestStatus,
-} from '../../common/enums';
-import { CreateChannelResponse } from '../types';
+} from '../../../common/enums';
+import { CreateChannelResponse } from '../../types';
 
 @Injectable()
 export class ChannelService {
