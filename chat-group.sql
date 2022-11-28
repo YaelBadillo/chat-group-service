@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TYPE "space_type" AS ENUM (
   'public',
   'private'
@@ -27,7 +29,7 @@ CREATE TYPE "request_status" AS ENUM (
 
 CREATE TABLE "users" (
   "id" uuid UNIQUE PRIMARY KEY DEFAULT (uuid_generate_v4()),
-  "name" varchar(30) UNIQUE NOT NULL,
+  "name" varchar(30) NOT NULL,
   "state" varchar(255),
   "password" varchar(255) NOT NULL,
   "profile_picture_key" varchar(255),
@@ -55,7 +57,7 @@ CREATE TABLE "members" (
   "invitation_status" invitation_status NOT NULL,
   "request_status" request_status NOT NULL,
   "deleted" boolean DEFAULT false,
-  "expire_at" timestamptz NOT NULL,
+  "expire_at" timestamptz,
   "created_by" uuid NOT NULL,
   "updated_by" uuid NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
