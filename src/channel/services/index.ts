@@ -1,2 +1,1 @@
-export * from './channel/channel.service';
-export * from './channel-gateway/channel-gateway.service'
+export * from './channel.service';

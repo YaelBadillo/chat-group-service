@@ -5,22 +5,22 @@ import { Chance } from 'chance';
 import { mock } from 'jest-mock-extended';
 
 import { ChannelService } from './channel.service';
-import { User, Channel, Member } from '../../../entities';
+import { User, Channel, Member } from '../../entities';
 import {
   InvitationStatus,
   MemberRole,
   RequestStatus,
   SpaceType,
-} from '../../../common/enums';
+} from '../../common/enums';
 import {
   userMockFactory,
   channelMockFactory,
-} from '../../../../test/utils/entity-mocks';
-import { ChannelsService, MembersService } from '../../../common/services';
-import { CreateChannelDto, DeleteChannelDto, UpdateChannelDto } from '../../dto';
-import { PasswordService } from '../../../shared/password';
-import { StatusResponse } from '../../../common/interfaces';
-import { CreateChannelResponse } from '../../types';
+} from '../../../test/utils/entity-mocks';
+import { ChannelsService, MembersService } from '../../common/services';
+import { CreateChannelDto, DeleteChannelDto, UpdateChannelDto } from '../dto';
+import { PasswordService } from '../../shared/password';
+import { StatusResponse } from '../../common/interfaces';
+import { CreateChannelResponse } from '../types';
 
 describe('ChannelService', () => {
   let service: ChannelService;
