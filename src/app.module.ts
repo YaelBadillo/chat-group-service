@@ -12,7 +12,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards';
 import { UserModule } from './user/user.module';
 import { configuration } from './config';
-import { User, Channel, Message } from './entities';
+import { User, Channel, Message, Member } from './entities';
 import { ChannelModule } from './channel/channel.module';
 
 @Module({
@@ -24,7 +24,7 @@ import { ChannelModule } from './channel/channel.module';
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         ...configService.get<TypeOrmModuleOptions>('database'),
-        entities: [User, Channel, Message],
+        entities: [User, Channel, Message, Member],
         namingStrategy: new SnakeNamingStrategy(),
         synchronize: false,
       }),
