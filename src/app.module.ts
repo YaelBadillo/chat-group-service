@@ -15,6 +15,7 @@ import { configuration } from './config';
 import { User, Channel, Message, Member } from './entities';
 import { ChannelModule } from './channel/channel.module';
 import { MessageModule } from './message/message.module';
+import { MemberModule } from './member/member.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { MessageModule } from './message/message.module';
     UserModule,
     ChannelModule,
     MessageModule,
+    MemberModule,
   ],
   controllers: [AppController],
   providers: [
