@@ -16,7 +16,7 @@ import { MembersService } from '../../common/services';
 import { Member, Message } from '../../entities';
 import { WsJwtAuth } from '../../common/decorators';
 
-@WebSocketGateway()
+@WebSocketGateway({ namespace: 'message' })
 export class MessageGateway implements OnGatewayConnection {
   constructor(
     private readonly messageService: MessageService,
@@ -44,7 +44,7 @@ export class MessageGateway implements OnGatewayConnection {
   public async create(
     @MessageBody() createMessageDto: CreateMessageDto,
     @ConnectedSocket() client: Socket,
-  ) {
+  ): Promise<void> {
     const message: Message = await this.messageService.create(createMessageDto);
     const messageString: string = JSON.stringify(message);
 
