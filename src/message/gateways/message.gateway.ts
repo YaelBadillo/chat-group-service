@@ -1,4 +1,9 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, OnGatewayConnection } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  OnGatewayConnection,
+} from '@nestjs/websockets';
 import { BadRequestException } from '@nestjs/common';
 
 import { Socket } from 'socket.io';

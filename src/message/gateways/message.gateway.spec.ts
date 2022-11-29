@@ -26,7 +26,7 @@ describe('MessageGateway', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        MessageGateway, 
+        MessageGateway,
         MessageService,
         {
           provide: MessageService,
