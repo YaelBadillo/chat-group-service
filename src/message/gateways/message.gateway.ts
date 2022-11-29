@@ -3,6 +3,7 @@ import {
   SubscribeMessage,
   MessageBody,
   OnGatewayConnection,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { BadRequestException } from '@nestjs/common';
 
@@ -12,7 +13,8 @@ import { MessageService } from '../services';
 import { CreateMessageDto } from '../dto/create-message.dto';
 import { UpdateMessageDto } from '../dto/update-message.dto';
 import { MembersService } from '../../common/services';
-import { Member } from '../../entities';
+import { Member, Message } from '../../entities';
+import { WsJwtAuth } from '../../common/decorators';
 
 @WebSocketGateway()
 export class MessageGateway implements OnGatewayConnection {
@@ -38,8 +40,15 @@ export class MessageGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('createMessage')
-  create(@MessageBody() createMessageDto: CreateMessageDto) {
-    return this.messageService.create(createMessageDto);
+  @WsJwtAuth()
+  public async create(
+    @MessageBody() createMessageDto: CreateMessageDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const message: Message = await this.messageService.create(createMessageDto);
+    const messageString: string = JSON.stringify(message);
+
+    client.to(createMessageDto.channelId).emit(messageString);
   }
 
   @SubscribeMessage('findAllMessage')

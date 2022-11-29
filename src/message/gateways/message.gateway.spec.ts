@@ -1,26 +1,34 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 
-import { Socket } from 'socket.io';
+import { BroadcastOperator, Socket } from 'socket.io';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { mock } from 'jest-mock-extended';
 import { Chance } from 'chance';
 
 import { MessageGateway } from './message.gateway';
 import { MessageService } from '../services';
 import { MembersService } from '../../common/services';
-import { Member } from '../../entities';
-import { memberMockFactory } from '../../../test/utils/entity-mocks';
+import { Member, Message } from '../../entities';
+import {
+  memberMockFactory,
+  messageMockFactory,
+} from '../../../test/utils/entity-mocks';
+import { CreateMessageDto } from '../dto';
+import { WsJwtAuthGuard } from '../../common/guard';
 
 describe('MessageGateway', () => {
   let gateway: MessageGateway;
   let messageServiceMock: jest.Mocked<MessageService>;
   let membersServiceMock: jest.Mocked<MembersService>;
+  let wsJwtAuthGuardMock: jest.Mocked<WsJwtAuthGuard>;
 
   let chance: Chance.Chance;
 
   beforeEach(async () => {
     messageServiceMock = mock<MessageService>();
     membersServiceMock = mock<MembersService>();
+    wsJwtAuthGuardMock = mock<WsJwtAuthGuard>();
 
     chance = new Chance();
 
@@ -37,7 +45,10 @@ describe('MessageGateway', () => {
           useValue: membersServiceMock,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(WsJwtAuthGuard)
+      .useValue(wsJwtAuthGuardMock)
+      .compile();
 
     gateway = module.get<MessageGateway>(MessageGateway);
   });
@@ -106,6 +117,55 @@ describe('MessageGateway', () => {
       expectedUserMembers.forEach((userMember) =>
         expect(socketMock.join).toBeCalledWith(userMember.channelId),
       );
+    });
+  });
+
+  describe('create method', () => {
+    let contentMock: string;
+    let channelIdMock: string;
+    let memberIdMock: string;
+    let messageIdToReplyMock: string;
+    let createMessageDtoMock: CreateMessageDto;
+    let clientMock: jest.Mocked<Socket>;
+    let broadCastOperatorMock: BroadcastOperator<DefaultEventsMap, any>;
+
+    beforeEach(() => {
+      contentMock = chance.paragraph({ length: 20 });
+      channelIdMock = chance.string({ length: 20 });
+      memberIdMock = chance.string({ length: 20 });
+      messageIdToReplyMock = chance.string({ length: 20 });
+      createMessageDtoMock = {
+        content: contentMock,
+        channelId: channelIdMock,
+        memberId: memberIdMock,
+        messageIdToReply: messageIdToReplyMock,
+      };
+      clientMock = mock<Socket>();
+      broadCastOperatorMock = mock<BroadcastOperator<DefaultEventsMap, any>>();
+      clientMock.to.mockReturnValue(broadCastOperatorMock);
+    });
+
+    it('should create the message', async () => {
+      const expectedArgument: CreateMessageDto = { ...createMessageDtoMock };
+
+      await gateway.create(createMessageDtoMock, clientMock);
+
+      expect(messageServiceMock.create).toBeCalledTimes(1);
+      expect(messageServiceMock.create).toBeCalledWith(expectedArgument);
+    });
+
+    it('should emit the message to the other members', async () => {
+      const messageMock: Message = messageMockFactory(chance);
+      const expectedChannelId: string = channelIdMock;
+      const expectedMessageString: string = JSON.stringify(messageMock);
+      messageServiceMock.create.mockReturnValue((async () => messageMock)());
+
+      await gateway.create(createMessageDtoMock, clientMock);
+
+      expect(clientMock.to).toBeCalledTimes(1);
+      expect(clientMock.to).toBeCalledWith(expectedChannelId);
+      expect(broadCastOperatorMock.emit).toBeCalledTimes(1);
+      expect(broadCastOperatorMock.emit).toBeCalledWith(expectedMessageString);
     });
   });
 });
