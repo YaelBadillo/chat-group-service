@@ -16,7 +16,7 @@ import { MembersService } from '../../common/services';
 import { Member, Message } from '../../entities';
 import { WsJwtAuth } from '../../common/decorators';
 
-@WebSocketGateway()
+@WebSocketGateway({ namespace: 'message' })
 export class MessageGateway implements OnGatewayConnection {
   constructor(
     private readonly messageService: MessageService,
