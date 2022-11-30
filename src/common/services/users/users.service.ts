@@ -36,4 +36,13 @@ export class UsersService {
       throw new InternalServerErrorException('User could not be deleted');
     }
   }
+
+  public async findOneById(id: string): Promise<User> {
+    try {
+      const user: User = await this.usersRepository.findOneBy({ id });
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException('User could not be found');
+    }
+  }
 }
