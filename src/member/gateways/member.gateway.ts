@@ -51,7 +51,7 @@ export class MemberGateway implements OnGatewayConnection {
     @ConnectedSocket() client: Socket,
     @MessageBody()
     createInvitationsDto: CreateInvitationsDto,
-  ) {
+  ): Promise<void> {
     const { id: userId }: User = client.data.user;
 
     const invitations: Member[] = await this.memberService.createInvitations(
