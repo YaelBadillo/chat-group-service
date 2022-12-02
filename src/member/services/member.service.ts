@@ -25,10 +25,14 @@ export class MemberService {
     const invitations = await Promise.all(
       userNames.map(async (userName) => {
         try {
-          const invitation: Member = await this.createInvitation(createdBy, channelId, userName);
+          const invitation: Member = await this.createInvitation(
+            createdBy,
+            channelId,
+            userName,
+          );
           return invitation;
         } catch (error) {
-          this.logger.log(error.message)
+          this.logger.log(error.message);
           return null;
         }
       }),
@@ -42,13 +46,9 @@ export class MemberService {
     channelId: string,
     userName: string,
   ): Promise<Member> {
-    const user: User = await this.usersService.findOneByName(
-      userName,
-    );
+    const user: User = await this.usersService.findOneByName(userName);
     if (!user)
-      throw new BadRequestException(
-        `There is no user with name ${userName}`,
-      );
+      throw new BadRequestException(`There is no user with name ${userName}`);
 
     const memberInstance = this.createMemberInstance(
       user,

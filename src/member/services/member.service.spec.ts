@@ -66,33 +66,32 @@ describe('MemberService', () => {
     });
 
     it('should find the user with the name in the created invitation dto', async () => {
-      const expectedUserNames: string[] = userNameMocks.map((userNameMock) => userNameMock);
+      const expectedUserNames: string[] = userNameMocks.map(
+        (userNameMock) => userNameMock,
+      );
 
       await service.createInvitations(createdByMock, createInvitationsDtoMock);
 
       expect(usersServiceMock.findOneByName).toBeCalledTimes(invitationsLength);
       expectedUserNames.forEach((expectedUserName) => {
-        expect(usersServiceMock.findOneByName).toBeCalledWith(
-          expectedUserName,
-        );
+        expect(usersServiceMock.findOneByName).toBeCalledWith(expectedUserName);
       });
     });
 
     it('should create invitations', async () => {
-      const expectedInvitationInstances: Member[] =
-        userNameMocks.map(() => {
-          const newInvitation = new Member();
-          newInvitation.channelId = channelIdMock;
-          newInvitation.role = MemberRole.MEMBER;
-          newInvitation.channelId = channelIdMock;
-          newInvitation.invitationStatus = InvitationStatus.SENDED;
-          newInvitation.requestStatus = RequestStatus.ACCEPTED;
-          newInvitation.deleted = false;
-          newInvitation.createdBy = createdByMock;
-          newInvitation.updatedBy = createdByMock;
+      const expectedInvitationInstances: Member[] = userNameMocks.map(() => {
+        const newInvitation = new Member();
+        newInvitation.channelId = channelIdMock;
+        newInvitation.role = MemberRole.MEMBER;
+        newInvitation.channelId = channelIdMock;
+        newInvitation.invitationStatus = InvitationStatus.SENDED;
+        newInvitation.requestStatus = RequestStatus.ACCEPTED;
+        newInvitation.deleted = false;
+        newInvitation.createdBy = createdByMock;
+        newInvitation.updatedBy = createdByMock;
 
-          return newInvitation;
-        });
+        return newInvitation;
+      });
 
       await service.createInvitations(createdByMock, createInvitationsDtoMock);
 
@@ -105,21 +104,19 @@ describe('MemberService', () => {
     });
 
     it('should return the created invitations', async () => {
-      const expectedInvitations: Member[] = userNameMocks.map(
-        () => {
-          const newInvitation = new Member();
-          newInvitation.channelId = channelIdMock;
-          newInvitation.role = MemberRole.MEMBER;
-          newInvitation.channelId = channelIdMock;
-          newInvitation.invitationStatus = InvitationStatus.SENDED;
-          newInvitation.requestStatus = RequestStatus.ACCEPTED;
-          newInvitation.deleted = false;
-          newInvitation.createdBy = createdByMock;
-          newInvitation.updatedBy = createdByMock;
+      const expectedInvitations: Member[] = userNameMocks.map(() => {
+        const newInvitation = new Member();
+        newInvitation.channelId = channelIdMock;
+        newInvitation.role = MemberRole.MEMBER;
+        newInvitation.channelId = channelIdMock;
+        newInvitation.invitationStatus = InvitationStatus.SENDED;
+        newInvitation.requestStatus = RequestStatus.ACCEPTED;
+        newInvitation.deleted = false;
+        newInvitation.createdBy = createdByMock;
+        newInvitation.updatedBy = createdByMock;
 
-          return newInvitation;
-        },
-      );
+        return newInvitation;
+      });
       membersServiceMock.save.mockImplementation(async (member: Member) => {
         return member;
       });
@@ -135,11 +132,7 @@ describe('MemberService', () => {
     it('should return all valid members', async () => {
       const expectedInvitations: Member[] = userNameMocks
         .map((userNameMock) => {
-          if (
-            userNameMock ===
-            userNameMocks[1]
-          )
-            return null;
+          if (userNameMock === userNameMocks[1]) return null;
           const newInvitation = new Member();
           newInvitation.channelId = channelIdMock;
           newInvitation.role = MemberRole.MEMBER;

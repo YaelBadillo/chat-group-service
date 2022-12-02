@@ -68,7 +68,7 @@ describe('MemberGateway', () => {
     });
 
     it('should throw if no user id is provided', async () => {
-      const expectedErrorMessage: string = 'Please provide a user id';
+      const expectedErrorMessage = 'Please provide a user id';
       clientMock.handshake.query = {};
 
       const execute = () => gateway.handleConnection(clientMock);
@@ -78,7 +78,7 @@ describe('MemberGateway', () => {
     });
 
     it('should throw if the user id is an array of strings', async () => {
-      const expectedErrorMessage: string =
+      const expectedErrorMessage =
         'The userId query parameter should be a string';
       clientMock.handshake.query = {
         userId: ['', ''],
@@ -91,7 +91,7 @@ describe('MemberGateway', () => {
     });
 
     it('should throw if user is not found', async () => {
-      const expectedErrorMessage: string = `There is no user with the user id ${userIdMock}`;
+      const expectedErrorMessage = `There is no user with the user id ${userIdMock}`;
       usersServiceMock.findOneById.mockReturnValue((async () => null)());
 
       const execute = () => gateway.handleConnection(clientMock);
@@ -144,8 +144,8 @@ describe('MemberGateway', () => {
         userNames: null,
       };
       expectedCreateInvitationsDto.userNames = userNameMocks.map(
-          (userNameMock) => userNameMock,
-        );
+        (userNameMock) => userNameMock,
+      );
 
       await gateway.createInvitations(clientMock, createInvitationsDtoMock);
 
@@ -157,17 +157,15 @@ describe('MemberGateway', () => {
     });
 
     it('should emit invitation to the respective active websocket clients', async () => {
-      const invitationsMock: Member[] = userNameMocks.map(
-        () => {
-          const newInvitation = memberMockFactory(chance);
-          newInvitation.userId = chance.string({ length: 20 });
-          newInvitation.channelId = channelIdMock;
-          newInvitation.createdBy = userMock.id;
-          newInvitation.updatedBy = userMock.id;
+      const invitationsMock: Member[] = userNameMocks.map(() => {
+        const newInvitation = memberMockFactory(chance);
+        newInvitation.userId = chance.string({ length: 20 });
+        newInvitation.channelId = channelIdMock;
+        newInvitation.createdBy = userMock.id;
+        newInvitation.updatedBy = userMock.id;
 
-          return newInvitation;
-        },
-      );
+        return newInvitation;
+      });
       const expectedInvitations: Member[] = invitationsMock.map(
         (invitationMock) => invitationMock,
       );
@@ -178,12 +176,18 @@ describe('MemberGateway', () => {
       await gateway.createInvitations(clientMock, createInvitationsDtoMock);
 
       expect(clientMock.to).toBeCalledTimes(createInvitationDtosLength);
-      expect(broadCastOperatorMock.emit).toBeCalledTimes(createInvitationDtosLength);
+      expect(broadCastOperatorMock.emit).toBeCalledTimes(
+        createInvitationDtosLength,
+      );
       expectedInvitations.forEach((expectedInvitation) => {
-        const expectedInvitationString: string = JSON.stringify(expectedInvitation);
+        const expectedInvitationString: string =
+          JSON.stringify(expectedInvitation);
 
         expect(clientMock.to).toBeCalledWith(expectedInvitation.userId);
-        expect(broadCastOperatorMock.emit).toBeCalledWith('invitation', expectedInvitationString);
+        expect(broadCastOperatorMock.emit).toBeCalledWith(
+          'invitation',
+          expectedInvitationString,
+        );
       });
     });
   });

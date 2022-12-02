@@ -27,7 +27,7 @@ export class MemberGateway implements OnGatewayConnection {
   ) {}
 
   public async handleConnection(client: Socket) {
-    console.log('aaa')
+    console.log('aaa');
     const userId: string | string[] = client.handshake.query?.userId;
     if (!userId) throw new BadRequestException('Please provide a user id');
 
@@ -54,7 +54,10 @@ export class MemberGateway implements OnGatewayConnection {
   ) {
     const { id: userId }: User = client.data.user;
 
-    const invitations: Member[] = await this.memberService.createInvitations(userId, createInvitationsDto);
+    const invitations: Member[] = await this.memberService.createInvitations(
+      userId,
+      createInvitationsDto,
+    );
 
     invitations.forEach((invitation) => {
       const invitationString: string = JSON.stringify(invitation);
