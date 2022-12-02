@@ -1,34 +1,64 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  OnGatewayConnection,
+  ConnectedSocket,
+  WebSocketServer,
+} from '@nestjs/websockets';
+import { BadRequestException, ParseArrayPipe } from '@nestjs/common';
+
+import { Server, Socket } from 'socket.io';
 
 import { MemberService } from '../services';
-import { CreateMemberDto, UpdateMemberDto } from '../dto';
+import { CreateInvitationDto } from '../dto';
+import { UsersService } from '../../common/services';
+import { Member, User } from '../../entities';
+import { WsJwtAuth } from '../../common/decorators';
 
-@WebSocketGateway()
-export class MemberGateway {
-  constructor(private readonly memberService: MemberService) {}
+@WebSocketGateway({ namespace: 'member' })
+export class MemberGateway implements OnGatewayConnection {
+  @WebSocketServer()
+  server: Server;
 
-  @SubscribeMessage('createMember')
-  create(@MessageBody() createMemberDto: CreateMemberDto) {
-    return this.memberService.create(createMemberDto);
+  constructor(
+    private readonly memberService: MemberService,
+    private readonly usersService: UsersService,
+  ) {}
+
+  public async handleConnection(client: Socket) {
+    console.log('aaa')
+    const userId: string | string[] = client.handshake.query?.userId;
+    if (!userId) throw new BadRequestException('Please provide a user id');
+
+    if (userId instanceof Array<string>)
+      throw new BadRequestException(
+        'The userId query parameter should be a string',
+      );
+
+    const user: User = await this.usersService.findOneById(userId);
+    if (!user)
+      throw new BadRequestException(
+        `There is no user with the user id ${userId}`,
+      );
+
+    client.join(userId);
   }
 
-  @SubscribeMessage('findAllMember')
-  findAll() {
-    return this.memberService.findAll();
-  }
+  @SubscribeMessage('createInvitations')
+  @WsJwtAuth()
+  public async createInvitations(
+    @ConnectedSocket() client: Socket,
+    @MessageBody(new ParseArrayPipe({ items: CreateInvitationDto }))
+    createInvitationDtos: CreateInvitationDto[],
+  ) {
+    const user: User = client.data.user;
 
-  @SubscribeMessage('findOneMember')
-  findOne(@MessageBody() id: number) {
-    return this.memberService.findOne(id);
-  }
+    const invitations: Member[] = await this.memberService.createInvitations(user.id, createInvitationDtos);
 
-  @SubscribeMessage('updateMember')
-  update(@MessageBody() updateMemberDto: UpdateMemberDto) {
-    return this.memberService.update(updateMemberDto.id, updateMemberDto);
-  }
-
-  @SubscribeMessage('removeMember')
-  remove(@MessageBody() id: number) {
-    return this.memberService.remove(id);
+    invitations.forEach((invitation) => {
+      const invitationString: string = JSON.stringify(invitation);
+      client.to(invitation.userId).emit('invitation', invitationString);
+    });
   }
 }
