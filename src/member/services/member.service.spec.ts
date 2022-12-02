@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Chance } from 'chance';
 import { mock } from 'jest-mock-extended';
 
-import { CreateInvitationDto } from '../dto';
+import { CreateInvitationsDto } from '../dto';
 import { MemberService } from './member.service';
 import { MembersService, UsersService } from '../../common/services';
 import { Member, User } from '../../entities';
@@ -48,37 +48,43 @@ describe('MemberService', () => {
   describe('createInvitations', () => {
     let createdByMock: string;
     let invitationsLength: number;
-    let createInvitationDtoMocks: CreateInvitationDto[];
+    let channelIdMock: string;
+    let userNameMocks: string[];
+    let createInvitationsDtoMock: CreateInvitationsDto;
 
     beforeEach(() => {
       createdByMock = chance.string({ length: 20 });
       invitationsLength = 3;
-      createInvitationDtoMocks = new Array(invitationsLength)
+      channelIdMock = chance.string({ length: 20 });
+      userNameMocks = new Array(invitationsLength)
         .fill(null)
-        .map(() => ({
-          userName: chance.name(),
-          channelId: chance.string({ length: 20 }),
-        }));
+        .map(() => chance.name());
+      createInvitationsDtoMock = {
+        channelId: channelIdMock,
+        userNames: userNameMocks,
+      };
     });
 
     it('should find the user with the name in the created invitation dto', async () => {
-      await service.createInvitations(createdByMock, createInvitationDtoMocks);
+      const expectedUserNames: string[] = userNameMocks.map((userNameMock) => userNameMock);
+
+      await service.createInvitations(createdByMock, createInvitationsDtoMock);
 
       expect(usersServiceMock.findOneByName).toBeCalledTimes(invitationsLength);
-      createInvitationDtoMocks.forEach((createInvitationDtoMock) => {
+      expectedUserNames.forEach((expectedUserName) => {
         expect(usersServiceMock.findOneByName).toBeCalledWith(
-          createInvitationDtoMock.userName,
+          expectedUserName,
         );
       });
     });
 
     it('should create invitations', async () => {
       const expectedInvitationInstances: Member[] =
-        createInvitationDtoMocks.map((createInvitationDtoMock) => {
+        userNameMocks.map(() => {
           const newInvitation = new Member();
-          newInvitation.channelId = createInvitationDtoMock.channelId;
+          newInvitation.channelId = channelIdMock;
           newInvitation.role = MemberRole.MEMBER;
-          newInvitation.channelId = createInvitationDtoMock.channelId;
+          newInvitation.channelId = channelIdMock;
           newInvitation.invitationStatus = InvitationStatus.SENDED;
           newInvitation.requestStatus = RequestStatus.ACCEPTED;
           newInvitation.deleted = false;
@@ -88,7 +94,7 @@ describe('MemberService', () => {
           return newInvitation;
         });
 
-      await service.createInvitations(createdByMock, createInvitationDtoMocks);
+      await service.createInvitations(createdByMock, createInvitationsDtoMock);
 
       expect(membersServiceMock.save).toBeCalledTimes(invitationsLength);
       expectedInvitationInstances.forEach((expectedInvitationInstance) => {
@@ -99,12 +105,12 @@ describe('MemberService', () => {
     });
 
     it('should return the created invitations', async () => {
-      const expectedInvitations: Member[] = createInvitationDtoMocks.map(
-        (createInvitationDtoMock) => {
+      const expectedInvitations: Member[] = userNameMocks.map(
+        () => {
           const newInvitation = new Member();
-          newInvitation.channelId = createInvitationDtoMock.channelId;
+          newInvitation.channelId = channelIdMock;
           newInvitation.role = MemberRole.MEMBER;
-          newInvitation.channelId = createInvitationDtoMock.channelId;
+          newInvitation.channelId = channelIdMock;
           newInvitation.invitationStatus = InvitationStatus.SENDED;
           newInvitation.requestStatus = RequestStatus.ACCEPTED;
           newInvitation.deleted = false;
@@ -120,24 +126,24 @@ describe('MemberService', () => {
 
       const result: Member[] = await service.createInvitations(
         createdByMock,
-        createInvitationDtoMocks,
+        createInvitationsDtoMock,
       );
 
       expect(result).toEqual(expectedInvitations);
     });
 
     it('should return all valid members', async () => {
-      const expectedInvitations: Member[] = createInvitationDtoMocks
-        .map((createInvitationDtoMock) => {
+      const expectedInvitations: Member[] = userNameMocks
+        .map((userNameMock) => {
           if (
-            createInvitationDtoMock.userName ===
-            createInvitationDtoMocks[1].userName
+            userNameMock ===
+            userNameMocks[1]
           )
             return null;
           const newInvitation = new Member();
-          newInvitation.channelId = createInvitationDtoMock.channelId;
+          newInvitation.channelId = channelIdMock;
           newInvitation.role = MemberRole.MEMBER;
-          newInvitation.channelId = createInvitationDtoMock.channelId;
+          newInvitation.channelId = channelIdMock;
           newInvitation.invitationStatus = InvitationStatus.SENDED;
           newInvitation.requestStatus = RequestStatus.ACCEPTED;
           newInvitation.deleted = false;
@@ -149,7 +155,7 @@ describe('MemberService', () => {
         .filter((expectedInvitation) => expectedInvitation);
       usersServiceMock.findOneByName.mockImplementation(
         async (name: string) => {
-          if (name === createInvitationDtoMocks[1].userName) return null;
+          if (name === userNameMocks[1]) return null;
 
           return new User();
         },
@@ -160,7 +166,7 @@ describe('MemberService', () => {
 
       const result: Member[] = await service.createInvitations(
         createdByMock,
-        createInvitationDtoMocks,
+        createInvitationsDtoMock,
       );
 
       expect(result).toEqual(expectedInvitations);

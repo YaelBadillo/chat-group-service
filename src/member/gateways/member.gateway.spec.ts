@@ -10,7 +10,7 @@ import { MemberGateway } from './member.gateway';
 import { MemberService } from '../services';
 import { UsersService } from '../../common/services';
 import { Member, User } from '../../entities';
-import { CreateInvitationDto } from '../dto';
+import { CreateInvitationsDto } from '../dto';
 import { WsJwtAuthGuard } from '../../common/guard';
 import {
   userMockFactory,
@@ -113,7 +113,9 @@ describe('MemberGateway', () => {
     let clientMock: jest.Mocked<Socket>;
     let broadCastOperatorMock: BroadcastOperator<DefaultEventsMap, any>;
     let createInvitationDtosLength: number;
-    let createInvitationDtoMocks: CreateInvitationDto[];
+    let channelIdMock: string;
+    let userNameMocks: string[];
+    let createInvitationsDtoMock: CreateInvitationsDto;
 
     beforeEach(() => {
       clientMock = mock<Socket>();
@@ -122,35 +124,44 @@ describe('MemberGateway', () => {
       broadCastOperatorMock = mock<BroadcastOperator<DefaultEventsMap, any>>();
       clientMock.to.mockReturnValue(broadCastOperatorMock);
       createInvitationDtosLength = 3;
-      createInvitationDtoMocks = new Array(createInvitationDtosLength)
+      channelIdMock = chance.string({ length: 20 });
+      userNameMocks = new Array(createInvitationDtosLength)
         .fill(null)
-        .map(() => ({
-          userName: chance.name(),
-          channelId: chance.string({ length: 20 }),
-        }));
+        .map(() => chance.name());
+      createInvitationsDtoMock = {
+        channelId: channelIdMock,
+        userNames: userNameMocks,
+      };
+
+      memberServiceMock.createInvitations.mockReturnValue(
+        (async () => [new Member()])(),
+      );
     });
 
     it('should create all invitations', async () => {
-      const expectedArguments: CreateInvitationDto[] =
-        createInvitationDtoMocks.map(
-          (createInvitationDtoMock) => createInvitationDtoMock,
+      const expectedCreateInvitationsDto: CreateInvitationsDto = {
+        channelId: channelIdMock,
+        userNames: null,
+      };
+      expectedCreateInvitationsDto.userNames = userNameMocks.map(
+          (userNameMock) => userNameMock,
         );
 
-      await gateway.createInvitations(clientMock, createInvitationDtoMocks);
+      await gateway.createInvitations(clientMock, createInvitationsDtoMock);
 
       expect(memberServiceMock.createInvitations).toBeCalledTimes(1);
       expect(memberServiceMock.createInvitations).toBeCalledWith(
         userMock.id,
-        expectedArguments,
+        expectedCreateInvitationsDto,
       );
     });
 
     it('should emit invitation to the respective active websocket clients', async () => {
-      const invitationsMock: Member[] = createInvitationDtoMocks.map(
-        (createInvitationDtoMock) => {
+      const invitationsMock: Member[] = userNameMocks.map(
+        () => {
           const newInvitation = memberMockFactory(chance);
           newInvitation.userId = chance.string({ length: 20 });
-          newInvitation.channelId = createInvitationDtoMock.channelId;
+          newInvitation.channelId = channelIdMock;
           newInvitation.createdBy = userMock.id;
           newInvitation.updatedBy = userMock.id;
 
@@ -164,7 +175,7 @@ describe('MemberGateway', () => {
         (async () => invitationsMock)(),
       );
 
-      await gateway.createInvitations(clientMock, createInvitationDtoMocks);
+      await gateway.createInvitations(clientMock, createInvitationsDtoMock);
 
       expect(clientMock.to).toBeCalledTimes(createInvitationDtosLength);
       expect(broadCastOperatorMock.emit).toBeCalledTimes(createInvitationDtosLength);

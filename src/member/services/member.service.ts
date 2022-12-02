@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 
 import { UsersService, MembersService } from '../../common/services';
-import { CreateInvitationDto } from '../dto';
+import { CreateInvitationsDto } from '../dto';
 import { Member, User } from '../../entities';
 import {
   InvitationStatus,
@@ -20,12 +20,12 @@ export class MemberService {
 
   public async createInvitations(
     createdBy: string,
-    createInvitationDtos: CreateInvitationDto[],
-  ) {
+    { channelId, userNames }: CreateInvitationsDto,
+  ): Promise<Member[]> {
     const invitations = await Promise.all(
-      createInvitationDtos.map(async (createInvitationDto) => {
+      userNames.map(async (userName) => {
         try {
-          const invitation: Member = await this.createInvitation(createdBy, createInvitationDto);
+          const invitation: Member = await this.createInvitation(createdBy, channelId, userName);
           return invitation;
         } catch (error) {
           this.logger.log(error.message)
@@ -39,20 +39,21 @@ export class MemberService {
 
   private async createInvitation(
     createdBy: string,
-    createInvitationDto: CreateInvitationDto,
-  ) {
+    channelId: string,
+    userName: string,
+  ): Promise<Member> {
     const user: User = await this.usersService.findOneByName(
-      createInvitationDto.userName,
+      userName,
     );
     if (!user)
       throw new BadRequestException(
-        `There is no user with name ${createInvitationDto.userName}`,
+        `There is no user with name ${userName}`,
       );
 
     const memberInstance = this.createMemberInstance(
       user,
       createdBy,
-      createInvitationDto,
+      channelId,
     );
 
     const invitation: Member = await this.membersService.save(memberInstance);
@@ -62,12 +63,12 @@ export class MemberService {
   private createMemberInstance(
     user: User,
     createdBy: string,
-    createInvitationDto: CreateInvitationDto,
+    channelId: string,
   ): Member {
     const memberInstance = new Member();
     memberInstance.userId = user.id;
     memberInstance.role = MemberRole.MEMBER;
-    memberInstance.channelId = createInvitationDto.channelId;
+    memberInstance.channelId = channelId;
     memberInstance.invitationStatus = InvitationStatus.SENDED;
     memberInstance.requestStatus = RequestStatus.ACCEPTED;
     memberInstance.deleted = false;

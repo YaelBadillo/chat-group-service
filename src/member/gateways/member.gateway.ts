@@ -6,12 +6,12 @@ import {
   ConnectedSocket,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { BadRequestException, ParseArrayPipe } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 
 import { Server, Socket } from 'socket.io';
 
 import { MemberService } from '../services';
-import { CreateInvitationDto } from '../dto';
+import { CreateInvitationsDto } from '../dto';
 import { UsersService } from '../../common/services';
 import { Member, User } from '../../entities';
 import { WsJwtAuth } from '../../common/decorators';
@@ -49,12 +49,12 @@ export class MemberGateway implements OnGatewayConnection {
   @WsJwtAuth()
   public async createInvitations(
     @ConnectedSocket() client: Socket,
-    @MessageBody(new ParseArrayPipe({ items: CreateInvitationDto }))
-    createInvitationDtos: CreateInvitationDto[],
+    @MessageBody()
+    createInvitationsDto: CreateInvitationsDto,
   ) {
-    const user: User = client.data.user;
+    const { id: userId }: User = client.data.user;
 
-    const invitations: Member[] = await this.memberService.createInvitations(user.id, createInvitationDtos);
+    const invitations: Member[] = await this.memberService.createInvitations(userId, createInvitationsDto);
 
     invitations.forEach((invitation) => {
       const invitationString: string = JSON.stringify(invitation);
