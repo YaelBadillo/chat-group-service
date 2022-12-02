@@ -166,6 +166,7 @@ describe('MemberGateway', () => {
 
         return newInvitation;
       });
+      const expectedEvent: string = 'invitation';
       const expectedInvitations: Member[] = invitationsMock.map(
         (invitationMock) => invitationMock,
       );
@@ -185,7 +186,7 @@ describe('MemberGateway', () => {
 
         expect(clientMock.to).toBeCalledWith(expectedInvitation.userId);
         expect(broadCastOperatorMock.emit).toBeCalledWith(
-          'invitation',
+          expectedEvent,
           expectedInvitationString,
         );
       });
