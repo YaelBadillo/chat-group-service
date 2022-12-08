@@ -8,7 +8,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { mock } from 'jest-mock-extended';
 import { Chance } from 'chance';
-import { Socket } from 'socket.io';
 
 import { ChannelOwnerGuard } from './channel-owner.guard';
 import { ChannelsService } from '../../services';
@@ -132,6 +131,8 @@ describe('ChannelOwnerGuard', () => {
         dataMock = {
           channelId: channelIdMock,
         };
+
+        clientMock.user = userMock;
         clientMock.data = dataMock;
 
         contextMock.switchToWs.mockReturnValue(wsArgumentsHostMock);
@@ -188,9 +189,6 @@ describe('ChannelOwnerGuard', () => {
       });
 
       it('should attach channel to the client object', async () => {
-        const channelMock: Channel = channelMockFactory(chance);
-        channelMock.id = dataMock.channelId;
-        channelMock.ownerId = clientMock.user.id;
         const expectedChannel: Channel = { ...channelMock };
         channelsServiceMock.findOneById.mockReturnValue(
           (async () => channelMock)(),
@@ -199,6 +197,16 @@ describe('ChannelOwnerGuard', () => {
         await guard.canActivate(contextMock);
 
         expect(clientMock.channel).toEqual(expectedChannel);
+      });
+
+      it('should return true if user is owner of the channel', async () => {
+        channelsServiceMock.findOneById.mockReturnValue(
+          (async () => channelMock)(),
+        );
+
+        const result: boolean = await guard.canActivate(contextMock);
+
+        expect(result).toBeTruthy();
       });
     });
   });
