@@ -14,7 +14,7 @@ import { MemberService } from '../services';
 import { CreateInvitationsDto } from '../dto';
 import { UsersService } from '../../common/services';
 import { Member, User } from '../../entities';
-import { WsJwtAuth } from '../../common/decorators';
+import { ChannelOwner, WsJwtAuth } from '../../common/decorators';
 
 @WebSocketGateway({ namespace: 'member' })
 export class MemberGateway implements OnGatewayConnection {
@@ -45,6 +45,7 @@ export class MemberGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('createInvitations')
+  @ChannelOwner()
   @WsJwtAuth()
   public async createInvitations(
     @ConnectedSocket() client: Socket,

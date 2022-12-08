@@ -7,12 +7,10 @@ import {
   ContextType,
 } from '@nestjs/common';
 
-import { Socket } from 'socket.io';
-
 import { ChannelsService } from '../../services';
 import { ParamsWithChannelId, ChannelOwnerRequest } from '../../interfaces';
 import { Channel } from '../../../entities';
-import { ChannelOwnerData } from '../../types';
+import { ChannelOwnerData, DataWithUser, SocketWithUser } from '../../types';
 
 @Injectable()
 export class ChannelOwnerGuard implements CanActivate {
@@ -42,7 +40,7 @@ export class ChannelOwnerGuard implements CanActivate {
   }
 
   private async wsVerify(context: ExecutionContext) {
-    const client: Socket = context.switchToWs().getClient();
+    const client: SocketWithUser = context.switchToWs().getClient();
     const data: ChannelOwnerData = context
       .switchToWs()
       .getData<ChannelOwnerData>();
@@ -60,9 +58,10 @@ export class ChannelOwnerGuard implements CanActivate {
     const channel: Channel = await this.channelsService.findOneById(channelId);
     if (!channel) throw new BadRequestException('Channel does not exists');
 
-    if (channelId !== channel.id)
+    const { user }: DataWithUser = client.data;
+    if (user.id !== channel.ownerId)
       throw new UnauthorizedException('You are not the owner of this channel');
 
-    data.channel = channel;
+    client.data.channel = channel;
   }
 }
