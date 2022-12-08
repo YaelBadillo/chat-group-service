@@ -10,7 +10,7 @@ import {
 import { ChannelsService } from '../../services';
 import { ParamsWithChannelId, ChannelOwnerRequest } from '../../interfaces';
 import { Channel } from '../../../entities';
-import { ChannelOwnerData, DataWithUser, SocketWithUser } from '../../types';
+import { ChannelOwnerData, ChannelOwnerSocket } from '../../types';
 
 @Injectable()
 export class ChannelOwnerGuard implements CanActivate {
@@ -40,7 +40,7 @@ export class ChannelOwnerGuard implements CanActivate {
   }
 
   private async wsVerify(context: ExecutionContext) {
-    const client: SocketWithUser = context.switchToWs().getClient();
+    const client: ChannelOwnerSocket = context.switchToWs().getClient();
     const data: ChannelOwnerData = context
       .switchToWs()
       .getData<ChannelOwnerData>();
@@ -58,10 +58,10 @@ export class ChannelOwnerGuard implements CanActivate {
     const channel: Channel = await this.channelsService.findOneById(channelId);
     if (!channel) throw new BadRequestException('Channel does not exists');
 
-    const { user }: DataWithUser = client.data;
+    const { user }: ChannelOwnerSocket = client;
     if (user.id !== channel.ownerId)
       throw new UnauthorizedException('You are not the owner of this channel');
 
-    client.data.channel = channel;
+    client.channel = channel;
   }
 }

@@ -1,11 +1,13 @@
 import { Socket } from 'socket.io';
 
-import { User } from '../../entities';
+import { Channel, User } from '../../entities';
 
-export type DataWithUser = {
+export type SocketWithUser = Socket & {
   user: User;
 };
 
-export type SocketWithUser = Socket & {
-  data: DataWithUser;
+export type SocketWithChannel = Socket & {
+  channel: Channel;
 };
+
+export type ChannelOwnerSocket = SocketWithUser & SocketWithChannel;

@@ -4,6 +4,4 @@ export type DataWithChannelId = {
   channelId: string;
 };
 
-export type ChannelOwnerData = DataWithChannelId & {
-  channel: Channel;
-};
+export type ChannelOwnerData = DataWithChannelId;

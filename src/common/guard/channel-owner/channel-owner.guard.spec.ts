@@ -18,7 +18,7 @@ import {
   channelMockFactory,
 } from '../../../../test/utils/entity-mocks';
 import { ChannelOwnerRequest } from '../../interfaces';
-import { ChannelOwnerData } from '../../types';
+import { ChannelOwnerData, ChannelOwnerSocket } from '../../types';
 
 describe('ChannelOwnerGuard', () => {
   let guard: ChannelOwnerGuard;
@@ -123,15 +123,14 @@ describe('ChannelOwnerGuard', () => {
 
     describe('with WS protocol', () => {
       let wsArgumentsHostMock: jest.Mocked<WsArgumentsHost>;
-      let clientMock: jest.Mocked<Socket>;
+      let clientMock: jest.Mocked<ChannelOwnerSocket>;
       let dataMock: jest.Mocked<ChannelOwnerData>;
 
       beforeEach(() => {
         wsArgumentsHostMock = mock<WsArgumentsHost>();
-        clientMock = mock<Socket>();
+        clientMock = mock<ChannelOwnerSocket>();
         dataMock = {
           channelId: channelIdMock,
-          channel: null,
         };
         clientMock.data = dataMock;
 
@@ -188,9 +187,10 @@ describe('ChannelOwnerGuard', () => {
         await expect(execute).rejects.toThrow(expectedErrorMessage);
       });
 
-      it('should attach channel to the data object', async () => {
+      it('should attach channel to the client object', async () => {
         const channelMock: Channel = channelMockFactory(chance);
         channelMock.id = dataMock.channelId;
+        channelMock.ownerId = clientMock.user.id;
         const expectedChannel: Channel = { ...channelMock };
         channelsServiceMock.findOneById.mockReturnValue(
           (async () => channelMock)(),
@@ -198,7 +198,7 @@ describe('ChannelOwnerGuard', () => {
 
         await guard.canActivate(contextMock);
 
-        expect(clientMock.data.channel).toEqual(expectedChannel);
+        expect(clientMock.channel).toEqual(expectedChannel);
       });
     });
   });
