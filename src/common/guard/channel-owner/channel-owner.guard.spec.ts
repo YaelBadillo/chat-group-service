@@ -3,11 +3,12 @@ import {
   BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { HttpArgumentsHost } from '@nestjs/common/interfaces';
+import { HttpArgumentsHost, WsArgumentsHost } from '@nestjs/common/interfaces';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { mock } from 'jest-mock-extended';
 import { Chance } from 'chance';
+import { Socket } from 'socket.io';
 
 import { ChannelOwnerGuard } from './channel-owner.guard';
 import { ChannelsService } from '../../services';
@@ -17,6 +18,7 @@ import {
   channelMockFactory,
 } from '../../../../test/utils/entity-mocks';
 import { ChannelOwnerRequest } from '../../interfaces';
+import { ChannelOwnerData } from '../../types';
 
 describe('ChannelOwnerGuard', () => {
   let guard: ChannelOwnerGuard;
@@ -44,71 +46,160 @@ describe('ChannelOwnerGuard', () => {
 
   describe('canActivate method', () => {
     let contextMock: jest.Mocked<ExecutionContext>;
-    let httpArgumentsHostMock: jest.Mocked<HttpArgumentsHost>;
-    let requestMock: jest.Mocked<ChannelOwnerRequest>;
     let channelIdMock: string;
     let userMock: User;
     let channelMock: Channel;
 
     beforeEach(() => {
       contextMock = mock<ExecutionContext>();
-      httpArgumentsHostMock = mock<HttpArgumentsHost>();
-      requestMock = mock<ChannelOwnerRequest>();
       channelIdMock = chance.string({ length: 20 });
       userMock = userMockFactory(chance);
       userMock.id = chance.string({ length: 20 });
       channelMock = channelMockFactory(chance);
       channelMock.ownerId = userMock.id;
 
-      requestMock.user = userMock;
-      requestMock.params = { channelId: channelIdMock };
-
-      httpArgumentsHostMock.getRequest.mockReturnValue(requestMock);
-      contextMock.switchToHttp.mockReturnValue(httpArgumentsHostMock);
-
       channelsServiceMock.findOneById.mockReturnValue(
         (async () => new Channel())(),
       );
     });
 
-    it('should throw if the channel does not exits', async () => {
-      const expectedErrorMessage = 'Channel does not exists';
-      channelsServiceMock.findOneById.mockReturnValue((async () => null)());
+    describe('with HTTP protocol', () => {
+      let httpArgumentsHostMock: jest.Mocked<HttpArgumentsHost>;
+      let requestMock: jest.Mocked<ChannelOwnerRequest>;
 
-      const execute = () => guard.canActivate(contextMock);
+      beforeEach(() => {
+        httpArgumentsHostMock = mock<HttpArgumentsHost>();
+        requestMock = mock<ChannelOwnerRequest>();
 
-      await expect(execute).rejects.toThrowError(BadRequestException);
-      await expect(execute).rejects.toThrow(expectedErrorMessage);
+        requestMock.user = userMock;
+        requestMock.params = { channelId: channelIdMock };
+
+        httpArgumentsHostMock.getRequest.mockReturnValue(requestMock);
+        contextMock.switchToHttp.mockReturnValue(httpArgumentsHostMock);
+
+        contextMock.getType.mockReturnValue('http');
+      });
+
+      it('should throw if the channel does not exits', async () => {
+        const expectedErrorMessage = 'Channel does not exists';
+        channelsServiceMock.findOneById.mockReturnValue((async () => null)());
+
+        const execute = () => guard.canActivate(contextMock);
+
+        await expect(execute).rejects.toThrowError(BadRequestException);
+        await expect(execute).rejects.toThrow(expectedErrorMessage);
+      });
+
+      it('should throw if the user does not own the channel', async () => {
+        const expectedErrorMessage = 'You are not the owner of this channel';
+
+        const execute = () => guard.canActivate(contextMock);
+
+        await expect(execute).rejects.toThrowError(UnauthorizedException);
+        await expect(execute).rejects.toThrow(expectedErrorMessage);
+      });
+
+      it('should attach channel to the request object', async () => {
+        const expectedChannel: Channel = { ...channelMock };
+        channelsServiceMock.findOneById.mockReturnValue(
+          (async () => channelMock)(),
+        );
+
+        await guard.canActivate(contextMock);
+
+        expect(requestMock.channel).toEqual(expectedChannel);
+      });
+
+      it('should return true if user is owner of the channel', async () => {
+        channelsServiceMock.findOneById.mockReturnValue(
+          (async () => channelMock)(),
+        );
+
+        const result: boolean = await guard.canActivate(contextMock);
+
+        expect(result).toBeTruthy();
+      });
     });
 
-    it('should throw if the user does not own the channel', async () => {
-      const expectedErrorMessage = 'You are not the owner of this channel';
+    describe('with WS protocol', () => {
+      let wsArgumentsHostMock: jest.Mocked<WsArgumentsHost>;
+      let clientMock: jest.Mocked<Socket>;
+      let dataMock: jest.Mocked<ChannelOwnerData>;
 
-      const execute = () => guard.canActivate(contextMock);
+      beforeEach(() => {
+        wsArgumentsHostMock = mock<WsArgumentsHost>();
+        clientMock = mock<Socket>();
+        dataMock = {
+          channelId: channelIdMock,
+          channel: null,
+        }
+        clientMock.data = dataMock;
 
-      await expect(execute).rejects.toThrowError(UnauthorizedException);
-      await expect(execute).rejects.toThrow(expectedErrorMessage);
-    });
+        contextMock.switchToWs.mockReturnValue(wsArgumentsHostMock);
+        wsArgumentsHostMock.getClient.mockReturnValue(clientMock);
+        wsArgumentsHostMock.getData.mockReturnValue(dataMock);
 
-    it('should attach channel to the request object', async () => {
-      const expectedChannel: Channel = { ...channelMock };
-      channelsServiceMock.findOneById.mockReturnValue(
-        (async () => channelMock)(),
-      );
+        contextMock.getType.mockReturnValue('ws');
+      });
 
-      await guard.canActivate(contextMock);
+      it('should throw if no channel id is provided', async () => {
+        const expectedErrorMessage: string = 'Please provide a channel id';
+        dataMock.channelId = '';
 
-      expect(requestMock.channel).toEqual(expectedChannel);
-    });
+        const execute = () => guard.canActivate(contextMock);
 
-    it('should return true if user is owner of the channel', async () => {
-      channelsServiceMock.findOneById.mockReturnValue(
-        (async () => channelMock)(),
-      );
+        await expect(execute).rejects.toThrowError(BadRequestException);
+        await expect(execute).rejects.toThrow(expectedErrorMessage);
+      });
 
-      const result: boolean = await guard.canActivate(contextMock);
+      it('should throw if channel id variable is an array of strings', async () => {
+        const expectedErrorMessage: string = 'The userId query parameter should be a string';
+        clientMock.handshake.query = {
+          channelId: ['', ''],
+        };
+        dataMock.channelId = '';
 
-      expect(result).toBeTruthy();
+        const execute = () => guard.canActivate(contextMock);
+
+        await expect(execute).rejects.toThrowError(BadRequestException);
+        await expect(execute).rejects.toThrow(expectedErrorMessage);
+      });
+
+      it('should throw if the channel does not exits', async () => {
+        const expectedErrorMessage = 'Channel does not exists';
+        channelsServiceMock.findOneById.mockReturnValue((async () => null)());
+
+        const execute = () => guard.canActivate(contextMock);
+
+        await expect(execute).rejects.toThrowError(BadRequestException);
+        await expect(execute).rejects.toThrow(expectedErrorMessage);
+      });
+
+      it('should throw if the user does not own the channel', async () => {
+        const expectedErrorMessage = 'You are not the owner of this channel';
+        channelsServiceMock.findOneById.mockReturnValue(
+          (async () => channelMockFactory(chance))(),
+        );
+
+        const execute = () => guard.canActivate(contextMock);
+
+        await expect(execute).rejects.toThrowError(UnauthorizedException);
+        await expect(execute).rejects.toThrow(expectedErrorMessage);
+
+      });
+
+      it('should attach channel to the data object', async () => {
+        const channelMock: Channel = channelMockFactory(chance);
+        channelMock.id = dataMock.channelId;
+        const expectedChannel: Channel = { ...channelMock };
+        channelsServiceMock.findOneById.mockReturnValue(
+          (async () => channelMock)(),
+        );
+
+        await guard.canActivate(contextMock);
+
+        expect(clientMock.data.channel).toEqual(expectedChannel);
+      });
     });
   });
 });
