@@ -20,11 +20,9 @@ export class ChannelOwnerGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const executionContextType: ContextType = context.getType<ContextType>();
-    if (executionContextType === 'http')
-      await this.httpVerify(context);
+    if (executionContextType === 'http') await this.httpVerify(context);
 
-    if (executionContextType === 'ws')
-      await this.wsVerify(context);
+    if (executionContextType === 'ws') await this.wsVerify(context);
 
     return true;
   }
@@ -45,16 +43,20 @@ export class ChannelOwnerGuard implements CanActivate {
 
   private async wsVerify(context: ExecutionContext) {
     const client: Socket = context.switchToWs().getClient();
-    const data: ChannelOwnerData = context.switchToWs().getData<ChannelOwnerData>();
+    const data: ChannelOwnerData = context
+      .switchToWs()
+      .getData<ChannelOwnerData>();
 
-    const channelId: string | string[] = data.channelId || client.handshake.query?.channelId;
-    if (!channelId) throw new BadRequestException('Please provide a channel id');
+    const channelId: string | string[] =
+      data.channelId || client.handshake.query?.channelId;
+    if (!channelId)
+      throw new BadRequestException('Please provide a channel id');
 
     if (channelId instanceof Array<string>)
       throw new BadRequestException(
         'The userId query parameter should be a string',
       );
-    
+
     const channel: Channel = await this.channelsService.findOneById(channelId);
     if (!channel) throw new BadRequestException('Channel does not exists');
 

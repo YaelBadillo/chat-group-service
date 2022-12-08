@@ -132,7 +132,7 @@ describe('ChannelOwnerGuard', () => {
         dataMock = {
           channelId: channelIdMock,
           channel: null,
-        }
+        };
         clientMock.data = dataMock;
 
         contextMock.switchToWs.mockReturnValue(wsArgumentsHostMock);
@@ -143,7 +143,7 @@ describe('ChannelOwnerGuard', () => {
       });
 
       it('should throw if no channel id is provided', async () => {
-        const expectedErrorMessage: string = 'Please provide a channel id';
+        const expectedErrorMessage = 'Please provide a channel id';
         dataMock.channelId = '';
 
         const execute = () => guard.canActivate(contextMock);
@@ -153,7 +153,8 @@ describe('ChannelOwnerGuard', () => {
       });
 
       it('should throw if channel id variable is an array of strings', async () => {
-        const expectedErrorMessage: string = 'The userId query parameter should be a string';
+        const expectedErrorMessage =
+          'The userId query parameter should be a string';
         clientMock.handshake.query = {
           channelId: ['', ''],
         };
@@ -185,7 +186,6 @@ describe('ChannelOwnerGuard', () => {
 
         await expect(execute).rejects.toThrowError(UnauthorizedException);
         await expect(execute).rejects.toThrow(expectedErrorMessage);
-
       });
 
       it('should attach channel to the data object', async () => {
