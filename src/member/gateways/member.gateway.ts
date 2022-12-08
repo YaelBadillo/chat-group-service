@@ -61,7 +61,7 @@ export class MemberGateway implements OnGatewayConnection {
 
     invitations.forEach((invitation) => {
       const invitationString: string = JSON.stringify(invitation);
-      client.to(invitation.userId).emit('invitation', invitationString);
+      client.to(invitation.userId).emit('handleInvitation', invitationString);
     });
   }
 }

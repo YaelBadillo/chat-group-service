@@ -11,7 +11,7 @@ import { MemberService } from '../services';
 import { UsersService } from '../../common/services';
 import { Member, User } from '../../entities';
 import { CreateInvitationsDto } from '../dto';
-import { WsJwtAuthGuard } from '../../common/guard';
+import { WsJwtAuthGuard, ChannelOwnerGuard } from '../../common/guard';
 import {
   userMockFactory,
   memberMockFactory,
@@ -22,6 +22,7 @@ describe('MemberGateway', () => {
   let memberServiceMock: jest.Mocked<MemberService>;
   let usersServiceMock: jest.Mocked<UsersService>;
   let wsJwtAuthGuardMock: jest.Mocked<WsJwtAuthGuard>;
+  let channelOwnerGuardMock: jest.Mocked<ChannelOwnerGuard>;
 
   let chance: Chance.Chance;
 
@@ -29,6 +30,7 @@ describe('MemberGateway', () => {
     memberServiceMock = mock<MemberService>();
     usersServiceMock = mock<UsersService>();
     wsJwtAuthGuardMock = mock<WsJwtAuthGuard>();
+    channelOwnerGuardMock = mock<ChannelOwnerGuard>();
 
     chance = new Chance();
 
@@ -47,6 +49,8 @@ describe('MemberGateway', () => {
     })
       .overrideGuard(WsJwtAuthGuard)
       .useValue(wsJwtAuthGuardMock)
+      .overrideGuard(ChannelOwnerGuard)
+      .useValue(channelOwnerGuardMock)
       .compile();
 
     gateway = module.get<MemberGateway>(MemberGateway);
@@ -166,7 +170,7 @@ describe('MemberGateway', () => {
 
         return newInvitation;
       });
-      const expectedEvent: string = 'invitation';
+      const expectedEvent: string = 'handleInvitation';
       const expectedInvitations: Member[] = invitationsMock.map(
         (invitationMock) => invitationMock,
       );
