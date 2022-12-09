@@ -12,6 +12,7 @@ import {
   MemberRole,
   RequestStatus,
 } from '../../common/enums';
+import { memberMockFactory } from '../../../test/utils/entity-mocks';
 
 describe('MemberService', () => {
   let service: MemberService;
@@ -163,6 +164,35 @@ describe('MemberService', () => {
       );
 
       expect(result).toEqual(expectedInvitations);
+    });
+  });
+
+  describe('createRequestToJoin method', () => {
+    let channelIdMock: string;
+    let userIdMock: string;
+
+    beforeEach(() => {
+      channelIdMock = chance.string({ length: 20 });
+      userIdMock = chance.string({ length: 20 });
+    });
+
+    it('should return the created request to join', async () => {
+      const requestToJoinMock: Member = memberMockFactory(chance);
+      requestToJoinMock.userId = userIdMock;
+      requestToJoinMock.channelId = channelIdMock;
+      requestToJoinMock.role = MemberRole.MEMBER;
+      requestToJoinMock.invitationStatus = InvitationStatus.ACCEPTED;
+      requestToJoinMock.requestStatus = RequestStatus.SENDED;
+      requestToJoinMock.createdBy = userIdMock;
+      requestToJoinMock.updatedBy = userIdMock;
+      const expectedRequestToJoin: Member = { ...requestToJoinMock };
+      membersServiceMock.save.mockReturnValue(
+        (async () => requestToJoinMock)(),
+      );
+
+      const result: Member = await service.createRequestToJoin(channelIdMock, userIdMock);
+
+      expect(result).toEqual(expectedRequestToJoin);
     });
   });
 });

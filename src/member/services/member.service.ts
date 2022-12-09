@@ -41,6 +41,14 @@ export class MemberService {
     return invitations.filter((invitation) => !!invitation);
   }
 
+  public async createRequestToJoin(channelId: string, userId: string): Promise<Member> {
+    const requestToJoinInstance: Member = await this.createRequestToJoinInstance(channelId, userId);
+
+    const requestToJoin: Member = await this.membersService.save(requestToJoinInstance);
+
+    return requestToJoin;
+  }
+
   private async createInvitation(
     createdBy: string,
     channelId: string,
@@ -76,5 +84,19 @@ export class MemberService {
     memberInstance.updatedBy = createdBy;
 
     return memberInstance;
+  }
+
+  private createRequestToJoinInstance(channelId: string, userId: string): Member {
+    const requestToJoinInstance = new Member();
+    requestToJoinInstance.userId = userId;
+    requestToJoinInstance.role = MemberRole.MEMBER;
+    requestToJoinInstance.channelId = channelId;
+    requestToJoinInstance.invitationStatus = InvitationStatus.ACCEPTED;
+    requestToJoinInstance.requestStatus = RequestStatus.SENDED;
+    requestToJoinInstance.deleted = false;
+    requestToJoinInstance.createdBy = userId;
+    requestToJoinInstance.updatedBy = userId;
+
+    return requestToJoinInstance;
   }
 }
