@@ -15,6 +15,7 @@ import { CreateInvitationsDto } from '../dto';
 import { UsersService } from '../../common/services';
 import { Member, User } from '../../entities';
 import { ChannelOwner, WsJwtAuth } from '../../common/decorators';
+import { SocketWithUser } from '../../common/types';
 
 @WebSocketGateway({ namespace: 'member' })
 export class MemberGateway implements OnGatewayConnection {
@@ -48,11 +49,11 @@ export class MemberGateway implements OnGatewayConnection {
   @ChannelOwner()
   @WsJwtAuth()
   public async createInvitations(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: SocketWithUser,
     @MessageBody()
     createInvitationsDto: CreateInvitationsDto,
   ): Promise<void> {
-    const { id: userId }: User = client.data.user;
+    const { id: userId }: User = client.user;
 
     const invitations: Member[] = await this.memberService.createInvitations(
       userId,

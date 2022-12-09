@@ -7,10 +7,9 @@ import {
 import { JwtService, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
-import { Socket } from 'socket.io';
-
 import { UsersService } from '../../services';
 import { User } from '../../../entities';
+import { SocketWithUser } from '../../types';
 
 @Injectable()
 export class WsJwtAuthGuard implements CanActivate {
@@ -21,7 +20,7 @@ export class WsJwtAuthGuard implements CanActivate {
   ) {}
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
-    const socket: Socket = context.switchToWs().getClient();
+    const socket: SocketWithUser = context.switchToWs().getClient();
 
     const token: string =
       socket.handshake.auth?.token || socket.handshake.headers?.token;
@@ -42,7 +41,7 @@ export class WsJwtAuthGuard implements CanActivate {
         'User does not exists, please authenticate',
       );
     
-    socket.data.user = user;
+    socket.user = user;
 
     return true;
   }

@@ -12,6 +12,7 @@ import { UsersService } from '../../common/services';
 import { Member, User } from '../../entities';
 import { CreateInvitationsDto } from '../dto';
 import { WsJwtAuthGuard, ChannelOwnerGuard } from '../../common/guard';
+import { SocketWithUser } from '../../common/types';
 import {
   userMockFactory,
   memberMockFactory,
@@ -114,7 +115,7 @@ describe('MemberGateway', () => {
 
   describe('createInvitations', () => {
     let userMock: User;
-    let clientMock: jest.Mocked<Socket>;
+    let clientMock: jest.Mocked<SocketWithUser>;
     let broadCastOperatorMock: BroadcastOperator<DefaultEventsMap, any>;
     let createInvitationDtosLength: number;
     let channelIdMock: string;
@@ -122,7 +123,7 @@ describe('MemberGateway', () => {
     let createInvitationsDtoMock: CreateInvitationsDto;
 
     beforeEach(() => {
-      clientMock = mock<Socket>();
+      clientMock = mock<SocketWithUser>();
       userMock = userMockFactory(chance);
       clientMock.data.user = userMock;
       broadCastOperatorMock = mock<BroadcastOperator<DefaultEventsMap, any>>();
