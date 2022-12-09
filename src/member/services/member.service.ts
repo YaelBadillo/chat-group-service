@@ -41,10 +41,16 @@ export class MemberService {
     return invitations.filter((invitation) => !!invitation);
   }
 
-  public async createRequestToJoin(channelId: string, userId: string): Promise<Member> {
-    const requestToJoinInstance: Member = await this.createRequestToJoinInstance(channelId, userId);
+  public async createRequestToJoin(
+    channelId: string,
+    userId: string,
+  ): Promise<Member> {
+    const requestToJoinInstance: Member =
+      await this.createRequestToJoinInstance(channelId, userId);
 
-    const requestToJoin: Member = await this.membersService.save(requestToJoinInstance);
+    const requestToJoin: Member = await this.membersService.save(
+      requestToJoinInstance,
+    );
 
     return requestToJoin;
   }
@@ -58,45 +64,63 @@ export class MemberService {
     if (!user)
       throw new BadRequestException(`There is no user with name ${userName}`);
 
-    const memberInstance = this.createMemberInstance(
-      user,
-      createdBy,
+    const invitationInstance = this.createInvitationInstance(
+      user.id,
       channelId,
+      createdBy,
     );
 
-    const invitation: Member = await this.membersService.save(memberInstance);
+    const invitation: Member = await this.membersService.save(
+      invitationInstance,
+    );
     return invitation;
   }
 
-  private createMemberInstance(
-    user: User,
+  private createInvitationInstance(
+    userId: string,
+    channelId: string,
     createdBy: string,
+  ): Member {
+    const invitationInstance = this.createMemberInstance(
+      userId,
+      channelId,
+      createdBy,
+    );
+    invitationInstance.role = MemberRole.MEMBER;
+    invitationInstance.invitationStatus = InvitationStatus.SENDED;
+    invitationInstance.requestStatus = RequestStatus.ACCEPTED;
+
+    return invitationInstance;
+  }
+
+  private createRequestToJoinInstance(
+    userId: string,
     channelId: string,
   ): Member {
+    const requestToJoinInstance = this.createMemberInstance(
+      userId,
+      channelId,
+      userId,
+    );
+    requestToJoinInstance.role = MemberRole.MEMBER;
+    requestToJoinInstance.invitationStatus = InvitationStatus.ACCEPTED;
+    requestToJoinInstance.requestStatus = RequestStatus.SENDED;
+
+    return requestToJoinInstance;
+  }
+
+  private createMemberInstance(
+    userId: string,
+    channelId: string,
+    createdBy: string,
+  ) {
     const memberInstance = new Member();
-    memberInstance.userId = user.id;
-    memberInstance.role = MemberRole.MEMBER;
+    memberInstance.userId = userId;
     memberInstance.channelId = channelId;
-    memberInstance.invitationStatus = InvitationStatus.SENDED;
-    memberInstance.requestStatus = RequestStatus.ACCEPTED;
     memberInstance.deleted = false;
     memberInstance.createdBy = createdBy;
     memberInstance.updatedBy = createdBy;
 
     return memberInstance;
-  }
-
-  private createRequestToJoinInstance(channelId: string, userId: string): Member {
-    const requestToJoinInstance = new Member();
-    requestToJoinInstance.userId = userId;
-    requestToJoinInstance.role = MemberRole.MEMBER;
-    requestToJoinInstance.channelId = channelId;
-    requestToJoinInstance.invitationStatus = InvitationStatus.ACCEPTED;
-    requestToJoinInstance.requestStatus = RequestStatus.SENDED;
-    requestToJoinInstance.deleted = false;
-    requestToJoinInstance.createdBy = userId;
-    requestToJoinInstance.updatedBy = userId;
-
-    return requestToJoinInstance;
   }
 }

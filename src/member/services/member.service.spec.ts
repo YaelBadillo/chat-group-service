@@ -46,7 +46,7 @@ describe('MemberService', () => {
     usersServiceMock.findOneByName.mockReturnValue((async () => new User())());
   });
 
-  describe('createInvitations', () => {
+  describe('createInvitations method', () => {
     let createdByMock: string;
     let invitationsLength: number;
     let channelIdMock: string;
