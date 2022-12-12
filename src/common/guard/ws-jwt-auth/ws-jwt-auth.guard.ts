@@ -40,7 +40,7 @@ export class WsJwtAuthGuard implements CanActivate {
       throw new UnauthorizedException(
         'User does not exists, please authenticate',
       );
-    
+
     socket.user = user;
 
     return true;

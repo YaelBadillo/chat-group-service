@@ -110,9 +110,7 @@ describe('WsJwtAuthGuard', () => {
     it('should attach user to the client object', async () => {
       const userMock: User = userMockFactory(chance);
       const expectedUser: User = { ...userMock };
-      usersServiceMock.findOneByName.mockReturnValue(
-        (async () => userMock)(),
-      );
+      usersServiceMock.findOneByName.mockReturnValue((async () => userMock)());
 
       await guard.canActivate(contextMock);
 
