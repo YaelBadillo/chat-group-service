@@ -10,4 +10,6 @@ export type SocketWithChannel = Socket & {
   channel: Channel;
 };
 
+export type SocketWithUserAndChannel = SocketWithUser & SocketWithChannel;
+
 export type ChannelOwnerSocket = SocketWithUser & SocketWithChannel;
