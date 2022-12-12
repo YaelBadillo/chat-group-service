@@ -9,13 +9,15 @@ import { Chance } from 'chance';
 import { MemberGateway } from './member.gateway';
 import { MemberService } from '../services';
 import { UsersService } from '../../common/services';
-import { Member, User } from '../../entities';
-import { CreateInvitationsDto } from '../dto';
+import { Channel, Member, User } from '../../entities';
+import { CreateInvitationsDto, CreateRequestToJoinDto } from '../dto';
 import { WsJwtAuthGuard, ChannelOwnerGuard } from '../../common/guard';
-import { SocketWithUser } from '../../common/types';
+import { SocketWithUser, SocketWithUserAndChannel } from '../../common/types';
+import { AttachChannelInterceptor } from '../../common/interceptors/attach-channel/attach-channel.interceptor';
 import {
   userMockFactory,
   memberMockFactory,
+  channelMockFactory,
 } from '../../../test/utils/entity-mocks';
 
 describe('MemberGateway', () => {
@@ -24,6 +26,7 @@ describe('MemberGateway', () => {
   let usersServiceMock: jest.Mocked<UsersService>;
   let wsJwtAuthGuardMock: jest.Mocked<WsJwtAuthGuard>;
   let channelOwnerGuardMock: jest.Mocked<ChannelOwnerGuard>;
+  let attachChannelInterceptorMock: jest.Mocked<AttachChannelInterceptor>;
 
   let chance: Chance.Chance;
 
@@ -32,6 +35,7 @@ describe('MemberGateway', () => {
     usersServiceMock = mock<UsersService>();
     wsJwtAuthGuardMock = mock<WsJwtAuthGuard>();
     channelOwnerGuardMock = mock<ChannelOwnerGuard>();
+    attachChannelInterceptorMock = mock<AttachChannelInterceptor>();
 
     chance = new Chance();
 
@@ -52,6 +56,8 @@ describe('MemberGateway', () => {
       .useValue(wsJwtAuthGuardMock)
       .overrideGuard(ChannelOwnerGuard)
       .useValue(channelOwnerGuardMock)
+      .overrideInterceptor(AttachChannelInterceptor)
+      .useValue(attachChannelInterceptorMock)
       .compile();
 
     gateway = module.get<MemberGateway>(MemberGateway);
@@ -113,7 +119,7 @@ describe('MemberGateway', () => {
     });
   });
 
-  describe('createInvitations', () => {
+  describe('createInvitations method', () => {
     let userMock: User;
     let clientMock: jest.Mocked<SocketWithUser>;
     let broadCastOperatorMock: BroadcastOperator<DefaultEventsMap, any>;
@@ -195,6 +201,49 @@ describe('MemberGateway', () => {
           expectedInvitationString,
         );
       });
+    });
+  });
+
+  describe('createRequestToJoin method', () => {
+    let userMock: User;
+    let channelMock: Channel;
+    let clientMock: jest.Mocked<SocketWithUserAndChannel>;
+    let channelIdMock: string;
+    let createRequestToJoinDtoMock: jest.Mocked<CreateRequestToJoinDto>;
+    let broadCastOperatorMock: BroadcastOperator<DefaultEventsMap, any>;
+
+    beforeEach(() => {
+      userMock = userMockFactory(chance);
+      channelMock = channelMockFactory(chance);
+      clientMock = mock<SocketWithUserAndChannel>();
+      clientMock.user = userMock;
+      clientMock.channel = channelMock;
+      channelIdMock = chance.string({ length: 20 });
+      createRequestToJoinDtoMock = {
+        channelId: channelIdMock,
+      };
+      broadCastOperatorMock = mock<BroadcastOperator<DefaultEventsMap, any>>();
+
+      clientMock.to.mockReturnValue(broadCastOperatorMock);
+    });
+
+    it('should emit request to join to the channel owner', async () => {
+      const requestToJoinMock: Member = memberMockFactory(chance);
+      const expectedEvent: string = 'handleRequestToJoin';
+      const expectedRequestToJoin: Member = { ...requestToJoinMock };
+      memberServiceMock.createRequestToJoin.mockReturnValue(
+        (async () => requestToJoinMock)(),
+      );
+
+      await gateway.createRequestToJoin(clientMock, createRequestToJoinDtoMock);
+
+      expect(clientMock.to).toBeCalledTimes(1);
+      expect(clientMock.to).toBeCalledWith(channelMock.ownerId);
+      expect(broadCastOperatorMock.emit).toBeCalledTimes(1);
+      expect(broadCastOperatorMock.emit).toBeCalledWith(
+        expectedEvent,
+        expectedRequestToJoin,
+      );
     });
   });
 });

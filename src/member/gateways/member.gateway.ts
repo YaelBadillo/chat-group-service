@@ -11,11 +11,15 @@ import { BadRequestException } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 
 import { MemberService } from '../services';
-import { CreateInvitationsDto } from '../dto';
+import { CreateInvitationsDto, CreateRequestToJoinDto } from '../dto';
 import { UsersService } from '../../common/services';
 import { Member, User } from '../../entities';
-import { ChannelOwner, WsJwtAuth } from '../../common/decorators';
-import { SocketWithUser } from '../../common/types';
+import {
+  AttachChannel,
+  ChannelOwner,
+  WsJwtAuth,
+} from '../../common/decorators';
+import { SocketWithUser, SocketWithUserAndChannel } from '../../common/types';
 
 @WebSocketGateway({ namespace: 'member' })
 export class MemberGateway implements OnGatewayConnection {
@@ -64,5 +68,22 @@ export class MemberGateway implements OnGatewayConnection {
       const invitationString: string = JSON.stringify(invitation);
       client.to(invitation.userId).emit('handleInvitation', invitationString);
     });
+  }
+
+  @SubscribeMessage('createRequestToJoin')
+  @AttachChannel()
+  @WsJwtAuth()
+  public async createRequestToJoin(
+    @ConnectedSocket() client: SocketWithUserAndChannel,
+    @MessageBody() { channelId }: CreateRequestToJoinDto,
+  ): Promise<void> {
+    const { user, channel }: SocketWithUserAndChannel = client;
+
+    const requestToJoin: Member = await this.memberService.createRequestToJoin(
+      user.id,
+      channelId,
+    );
+
+    client.to(channel.ownerId).emit('handleRequestToJoin', requestToJoin);
   }
 }
