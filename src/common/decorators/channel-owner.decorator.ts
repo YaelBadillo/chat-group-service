@@ -1,5 +1,6 @@
 import { applyDecorators, UseGuards } from '@nestjs/common';
 
-import { ChannelOwnerGuard } from '../guard';
+import { ChannelMemberGuard, ChannelOwnerGuard } from '../guard';
 
-export const ChannelOwner = () => applyDecorators(UseGuards(ChannelOwnerGuard));
+export const ChannelOwner = () =>
+  applyDecorators(UseGuards(ChannelMemberGuard, ChannelOwnerGuard));
