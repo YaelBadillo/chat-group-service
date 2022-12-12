@@ -13,7 +13,7 @@ import { Channel, Member, User } from '../../entities';
 import { CreateInvitationsDto, CreateRequestToJoinDto } from '../dto';
 import { WsJwtAuthGuard, ChannelOwnerGuard } from '../../common/guard';
 import { SocketWithUser, SocketWithUserAndChannel } from '../../common/types';
-import { AttachChannelInterceptor } from '../../common/interceptors/attach-channel/attach-channel.interceptor';
+import { AttachChannelInterceptor } from '../../common/interceptors';
 import {
   userMockFactory,
   memberMockFactory,
