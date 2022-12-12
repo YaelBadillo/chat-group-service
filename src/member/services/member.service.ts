@@ -42,11 +42,13 @@ export class MemberService {
   }
 
   public async createRequestToJoin(
-    channelId: string,
     userId: string,
+    channelId: string,
   ): Promise<Member> {
-    const requestToJoinInstance: Member =
-      await this.createRequestToJoinInstance(channelId, userId);
+    const requestToJoinInstance: Member = this.createRequestToJoinInstance(
+      userId,
+      channelId,
+    );
 
     const requestToJoin: Member = await this.membersService.save(
       requestToJoinInstance,
