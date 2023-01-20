@@ -70,6 +70,16 @@ export class MemberGateway implements OnGatewayConnection {
     });
   }
 
+  @SubscribeMessage('acceptInvitation')
+  @AttachChannel()
+  @WsJwtAuth()
+  public async acceptInvitation(
+    @ConnectedSocket() client: SocketWithUserAndChannel,
+    @MessageBody() acceptInvitationDto,
+  ): Promise<void> {
+
+  }
+
   @SubscribeMessage('createRequestToJoin')
   @AttachChannel()
   @WsJwtAuth()
