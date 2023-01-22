@@ -7,11 +7,12 @@ import {
   Post,
 } from '@nestjs/common';
 import { UserFromRequest } from 'src/common/decorators';
-import { CreateInvitationsDto } from '../dto';
 
+import { CreateInvitationsDto } from '../dto';
 import { MemberService } from '../services';
 import { MemberGateway } from '../gateways';
-import { User, Member } from '../../entities';
+import { User, Member, Channel } from '../../entities';
+import { ChannelFromRequest, ChannelMember } from '../../common/decorators';
 
 @Controller('member')
 export class MemberController {
@@ -23,9 +24,9 @@ export class MemberController {
   @Post(':channelId/create-invitations')
   @HttpCode(HttpStatus.CREATED)
   public async createInvitations(
+    @Param('channelId') channelId: string,
     @Body() createInvitationsDto: CreateInvitationsDto,
     @UserFromRequest() user: User,
-    @Param('channelId') channelId: string,
   ): Promise<Member[]> {
     const { id: userId }: User = user;
 
@@ -38,5 +39,26 @@ export class MemberController {
     this.memberGateway.sendInvitationsToEachActiveUser(invitations);
 
     return invitations;
+  }
+
+  @Post(':channelId/create-request-to-join')
+  @HttpCode(HttpStatus.CREATED)
+  @ChannelMember()
+  public async createRequestToJoin(
+    @Param('channelId') channelId: string,
+    @UserFromRequest() user: User,
+    @ChannelFromRequest() channel: Channel,
+  ) {
+    const requestToJoin: Member = await this.memberService.createRequestToJoin(
+      user.id,
+      channelId,
+    );
+
+    this.memberGateway.sendRequestToJoinToOwnerMember(
+      channel.ownerId,
+      requestToJoin,
+    );
+
+    return requestToJoin;
   }
 }

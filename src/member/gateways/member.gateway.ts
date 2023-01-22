@@ -10,26 +10,17 @@ import { BadRequestException } from '@nestjs/common';
 
 import { Server, Socket } from 'socket.io';
 
-import { MemberService } from '../services';
-import { CreateRequestToJoinDto } from '../dto';
 import { UsersService } from '../../common/services';
 import { Member, User } from '../../entities';
-import {
-  AttachChannel,
-  ChannelOwner,
-  WsJwtAuth,
-} from '../../common/decorators';
-import { SocketWithUser, SocketWithUserAndChannel } from '../../common/types';
+import { AttachChannel, WsJwtAuth } from '../../common/decorators';
+import { SocketWithUserAndChannel } from '../../common/types';
 
 @WebSocketGateway({ namespace: 'member' })
 export class MemberGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
-  constructor(
-    private readonly memberService: MemberService,
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   public async handleConnection(client: Socket) {
     const userId: string | string[] = client.handshake.query?.userId;
@@ -66,20 +57,10 @@ export class MemberGateway implements OnGatewayConnection {
     @MessageBody() acceptInvitationDto,
   ): Promise<void> {}
 
-  @SubscribeMessage('createRequestToJoin')
-  @AttachChannel()
-  @WsJwtAuth()
-  public async createRequestToJoin(
-    @ConnectedSocket() client: SocketWithUserAndChannel,
-    @MessageBody() { channelId }: CreateRequestToJoinDto,
+  public async sendRequestToJoinToOwnerMember(
+    ownerId: string,
+    requestToJoin: Member,
   ): Promise<void> {
-    const { user, channel }: SocketWithUserAndChannel = client;
-
-    const requestToJoin: Member = await this.memberService.createRequestToJoin(
-      user.id,
-      channelId,
-    );
-
-    client.to(channel.ownerId).emit('handleRequestToJoin', requestToJoin);
+    this.server.to(ownerId).emit('handleRequestToJoin', requestToJoin);
   }
 }
