@@ -1,13 +1,8 @@
-import { Type } from 'class-transformer';
-import { IsNotEmpty, IsString, Length, ValidateNested } from 'class-validator';
+import { ArrayMinSize, IsArray, IsString } from 'class-validator';
 
 export class CreateInvitationsDto {
-  @IsString()
-  @Length(0, 255)
-  @IsNotEmpty()
-  channelId: string;
-
-  @Type(() => String)
-  @ValidateNested({ each: true })
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMinSize(1)
   userNames: string[];
 }

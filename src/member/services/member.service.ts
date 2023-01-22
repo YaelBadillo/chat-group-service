@@ -1,7 +1,6 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 
 import { UsersService, MembersService } from '../../common/services';
-import { CreateInvitationsDto } from '../dto';
 import { Member, User } from '../../entities';
 import {
   InvitationStatus,
@@ -20,7 +19,8 @@ export class MemberService {
 
   public async createInvitations(
     createdBy: string,
-    { channelId, userNames }: CreateInvitationsDto,
+    channelId: string,
+    userNames: string[],
   ): Promise<Member[]> {
     const invitations = await Promise.all(
       userNames.map(async (userName) => {

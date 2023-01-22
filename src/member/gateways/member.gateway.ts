@@ -11,7 +11,7 @@ import { BadRequestException } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 
 import { MemberService } from '../services';
-import { CreateInvitationsDto, CreateRequestToJoinDto } from '../dto';
+import { CreateRequestToJoinDto } from '../dto';
 import { UsersService } from '../../common/services';
 import { Member, User } from '../../entities';
 import {
@@ -49,24 +49,12 @@ export class MemberGateway implements OnGatewayConnection {
     client.join(userId);
   }
 
-  @SubscribeMessage('createInvitations')
-  @ChannelOwner()
-  @WsJwtAuth()
-  public async createInvitations(
-    @ConnectedSocket() client: SocketWithUser,
-    @MessageBody()
-    createInvitationsDto: CreateInvitationsDto,
-  ): Promise<void> {
-    const { id: userId }: User = client.user;
-
-    const invitations: Member[] = await this.memberService.createInvitations(
-      userId,
-      createInvitationsDto,
-    );
-
+  public sendInvitationsToEachActiveUser(invitations: Member[]): void {
     invitations.forEach((invitation) => {
       const invitationString: string = JSON.stringify(invitation);
-      client.to(invitation.userId).emit('handleInvitation', invitationString);
+      this.server
+        .to(invitation.userId)
+        .emit('handleInvitation', invitationString);
     });
   }
 
@@ -76,9 +64,7 @@ export class MemberGateway implements OnGatewayConnection {
   public async acceptInvitation(
     @ConnectedSocket() client: SocketWithUserAndChannel,
     @MessageBody() acceptInvitationDto,
-  ): Promise<void> {
-
-  }
+  ): Promise<void> {}
 
   @SubscribeMessage('createRequestToJoin')
   @AttachChannel()
