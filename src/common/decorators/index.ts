@@ -6,3 +6,5 @@ export * from './channel-from-request.decorator';
 export * from './ws-jwt-auth.decorator';
 export * from './attach-channel.decorator';
 export * from './verify-channel.decorator';
+export * from './verify-member.decorator';
+export * from './member-from-request.decorator';

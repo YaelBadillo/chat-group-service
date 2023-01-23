@@ -1,4 +1,4 @@
-import { Channel, User } from '../../entities';
+import { Channel, Member, User } from '../../entities';
 import { ParamsWithChannelId } from './params.interface';
 
 export interface RequestWithUser extends Request {
@@ -11,6 +11,10 @@ export interface RequestWithParams<T> extends Request {
 
 export interface RequestWithChannel extends Request {
   channel: Channel;
+}
+
+export interface RequestWithMember extends Request {
+  member: Member;
 }
 
 export interface ChannelOwnerRequest
