@@ -1,26 +1,24 @@
 import {
   WebSocketGateway,
-  SubscribeMessage,
-  MessageBody,
   OnGatewayConnection,
-  ConnectedSocket,
   WebSocketServer,
 } from '@nestjs/websockets';
 import { BadRequestException } from '@nestjs/common';
 
 import { Server, Socket } from 'socket.io';
 
-import { UsersService } from '../../common/services';
+import { MembersService, UsersService } from '../../common/services';
 import { Member, User } from '../../entities';
-import { AttachChannel, WsJwtAuth } from '../../common/decorators';
-import { SocketWithUserAndChannel } from '../../common/types';
 
 @WebSocketGateway({ namespace: 'member' })
 export class MemberGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly membersService: MembersService,
+  ) {}
 
   public async handleConnection(client: Socket) {
     const userId: string | string[] = client.handshake.query?.userId;
@@ -49,13 +47,19 @@ export class MemberGateway implements OnGatewayConnection {
     });
   }
 
-  @SubscribeMessage('acceptInvitation')
-  @AttachChannel()
-  @WsJwtAuth()
-  public async acceptInvitation(
-    @ConnectedSocket() client: SocketWithUserAndChannel,
-    @MessageBody() acceptInvitationDto,
-  ): Promise<void> {}
+  public async notifyNewMemberToEachActiveMember(
+    newMember: Member,
+  ): Promise<void> {
+    const members: Member[] = await this.membersService.findByChannelId(
+      newMember.channelId,
+    );
+    members.forEach((member) => {
+      if (member.id === newMember.id) return;
+
+      const newMemberString: string = JSON.stringify(newMember);
+      this.server.to(member.userId).emit('handleNewMember', newMemberString);
+    });
+  }
 
   public async sendRequestToJoinToOwnerMember(
     ownerId: string,

@@ -34,4 +34,32 @@ export class MembersService {
       throw new InternalServerErrorException('Members could not be found');
     }
   }
+
+  public async findOneByUserIdAndChannelId(
+    userId: string,
+    channelId: string,
+  ): Promise<Member> {
+    try {
+      const member: Member = await this.membersRepository.findOneBy({
+        userId,
+        channelId,
+      });
+      return member;
+    } catch (error) {
+      throw new InternalServerErrorException('Member could not be found');
+    }
+  }
+
+  public async findByChannelId(channelId: string): Promise<Member[]> {
+    try {
+      const members: Member[] = await this.membersRepository.findBy({
+        channelId,
+      });
+      return members;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Members the channel ${channelId} could not found`,
+      );
+    }
+  }
 }

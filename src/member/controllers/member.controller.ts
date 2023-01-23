@@ -5,14 +5,20 @@ import {
   HttpStatus,
   Param,
   Post,
+  Patch
 } from '@nestjs/common';
-import { UserFromRequest } from 'src/common/decorators';
 
 import { CreateInvitationsDto } from '../dto';
 import { MemberService } from '../services';
 import { MemberGateway } from '../gateways';
 import { User, Member, Channel } from '../../entities';
-import { ChannelFromRequest, ChannelMember } from '../../common/decorators';
+import {
+  UserFromRequest,
+  ChannelFromRequest,
+  VerifyChannel,
+  VerifyMember,
+  MemberFromRequest,
+} from '../../common/decorators';
 
 @Controller('member')
 export class MemberController {
@@ -41,14 +47,27 @@ export class MemberController {
     return invitations;
   }
 
+  @Patch(':channelId/accept-invitation')
+  @HttpCode(HttpStatus.OK)
+  @VerifyMember()
+  public async acceptInvitation(
+    @MemberFromRequest() member: Member,
+  ): Promise<Member> {
+    const newMember: Member = await this.memberService.acceptInvitation(member);
+
+    this.memberGateway.notifyNewMemberToEachActiveMember(newMember);
+
+    return newMember;
+  }
+
   @Post(':channelId/create-request-to-join')
   @HttpCode(HttpStatus.CREATED)
-  @ChannelMember()
+  @VerifyChannel()
   public async createRequestToJoin(
     @Param('channelId') channelId: string,
     @UserFromRequest() user: User,
     @ChannelFromRequest() channel: Channel,
-  ) {
+  ): Promise<Member> {
     const requestToJoin: Member = await this.memberService.createRequestToJoin(
       user.id,
       channelId,

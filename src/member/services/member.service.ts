@@ -11,6 +11,12 @@ import {
 @Injectable()
 export class MemberService {
   private readonly logger = new Logger(MemberService.name);
+  private readonly invitationStatusErrorMessages = {
+    [InvitationStatus.ACCEPTED]: 'The invitation was already accepted',
+    [InvitationStatus.CANCELED]: 'The invitation was already cancelled',
+    [InvitationStatus.EXPIRED]: 'The invitation was already expired',
+    [InvitationStatus.REJECTED]: 'The invitation was already rejected',
+  };
 
   constructor(
     private readonly usersService: UsersService,
@@ -39,6 +45,22 @@ export class MemberService {
     );
 
     return invitations.filter((invitation) => !!invitation);
+  }
+
+  public async acceptInvitation(newMember: Member): Promise<Member> {
+    if (
+      newMember.invitationStatus !== InvitationStatus.SENDED &&
+      newMember.invitationStatus !== InvitationStatus.RECEIVED
+    )
+      throw new BadRequestException(
+        this.invitationStatusErrorMessages[newMember.invitationStatus],
+      );
+
+    newMember.invitationStatus = InvitationStatus.ACCEPTED;
+
+    await this.membersService.save(newMember);
+
+    return newMember;
   }
 
   public async createRequestToJoin(
