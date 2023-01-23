@@ -12,7 +12,7 @@ import { Channel } from '../../../entities';
 import { ChannelOwnerData, ChannelOwnerSocket } from '../../types';
 
 @Injectable()
-export class ChannelMemberGuard implements CanActivate {
+export class VerifyChannelGuard implements CanActivate {
   constructor(private readonly channelsService: ChannelsService) {}
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {

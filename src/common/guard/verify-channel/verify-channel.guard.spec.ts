@@ -5,7 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { Chance } from 'chance';
 
-import { ChannelMemberGuard } from './channel-member.guard';
+import { VerifyChannelGuard } from './verify-channel.guard';
 import { ChannelsService } from '../../services';
 import { User, Channel } from '../../../entities';
 import {
@@ -16,7 +16,7 @@ import { ChannelOwnerRequest } from '../../interfaces';
 import { ChannelOwnerData, ChannelOwnerSocket } from '../../types';
 
 describe('ChannelOwnerGuard', () => {
-  let guard: ChannelMemberGuard;
+  let guard: VerifyChannelGuard;
   let channelsServiceMock: jest.Mocked<ChannelsService>;
 
   let chance: Chance.Chance;
@@ -28,7 +28,7 @@ describe('ChannelOwnerGuard', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        ChannelMemberGuard,
+        VerifyChannelGuard,
         {
           provide: ChannelsService,
           useValue: channelsServiceMock,
@@ -36,7 +36,7 @@ describe('ChannelOwnerGuard', () => {
       ],
     }).compile();
 
-    guard = module.get<ChannelMemberGuard>(ChannelMemberGuard);
+    guard = module.get<VerifyChannelGuard>(VerifyChannelGuard);
   });
 
   describe('canActivate method', () => {
