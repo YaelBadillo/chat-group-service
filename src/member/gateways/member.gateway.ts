@@ -2,6 +2,7 @@ import {
   WebSocketGateway,
   OnGatewayConnection,
   WebSocketServer,
+  OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import {
   BadRequestException,
@@ -17,7 +18,7 @@ import { MembersService, UsersService } from '../../common/services';
 import { Member, User } from '../../entities';
 
 @WebSocketGateway({ namespace: 'member' })
-export class MemberGateway implements OnGatewayConnection {
+export class MemberGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(MemberGateway.name);
 
   @WebSocketServer()
@@ -53,7 +54,17 @@ export class MemberGateway implements OnGatewayConnection {
         'User does not exists, please authenticate',
       );
 
+    client.data.user = user;
+
     client.join(user.id);
+  }
+
+  public handleDisconnect(client: Socket): void {
+    const user: User = client.data.user;
+
+    delete client.data.user;
+
+    client.leave(user.id);
   }
 
   public sendInvitationsToEachActiveUser(invitations: Member[]): void {
