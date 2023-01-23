@@ -3,7 +3,13 @@ import {
   OnGatewayConnection,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { BadRequestException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService, JwtModuleOptions } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 import { Server, Socket } from 'socket.io';
 
@@ -12,30 +18,42 @@ import { Member, User } from '../../entities';
 
 @WebSocketGateway({ namespace: 'member' })
 export class MemberGateway implements OnGatewayConnection {
+  private readonly logger = new Logger(MemberGateway.name);
+
   @WebSocketServer()
-  server: Server;
+  private readonly server: Server;
 
   constructor(
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
     private readonly usersService: UsersService,
     private readonly membersService: MembersService,
   ) {}
 
   public async handleConnection(client: Socket) {
-    const userId: string | string[] = client.handshake.query?.userId;
-    if (!userId) throw new BadRequestException('Please provide a user id');
+    const token: string =
+      client.handshake.auth?.token || client.handshake.headers?.token;
+    if (!token) throw new UnauthorizedException('No token provided');
 
-    if (userId instanceof Array<string>)
-      throw new BadRequestException(
-        'The userId query parameter should be a string',
-      );
+    let name: string;
+    try {
+      name = this.jwtService.verify<{ name: string }>(token, {
+        ...this.configService.get<JwtModuleOptions>('jwt'),
+      }).name;
+    } catch (error) {
+      this.logger.error('Invalid token');
+      client.emit('validation', 'Invalid token');
+      client.disconnect();
+      return;
+    }
 
-    const user: User = await this.usersService.findOneById(userId);
+    const user: User = await this.usersService.findOneByName(name);
     if (!user)
       throw new BadRequestException(
-        `There is no user with the user id ${userId}`,
+        'User does not exists, please authenticate',
       );
 
-    client.join(userId);
+    client.join(user.id);
   }
 
   public sendInvitationsToEachActiveUser(invitations: Member[]): void {
