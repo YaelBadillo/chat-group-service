@@ -11,12 +11,6 @@ import {
 @Injectable()
 export class MemberService {
   private readonly logger = new Logger(MemberService.name);
-  private readonly invitationStatusErrorMessages = {
-    [InvitationStatus.ACCEPTED]: 'The invitation was already accepted',
-    [InvitationStatus.CANCELED]: 'The invitation was already cancelled',
-    [InvitationStatus.EXPIRED]: 'The invitation was already expired',
-    [InvitationStatus.REJECTED]: 'The invitation was already rejected',
-  };
 
   constructor(
     private readonly usersService: UsersService,
@@ -53,7 +47,7 @@ export class MemberService {
       newMember.invitationStatus !== InvitationStatus.RECEIVED
     )
       throw new BadRequestException(
-        this.invitationStatusErrorMessages[newMember.invitationStatus],
+        `The invitation was already ${newMember.invitationStatus}`,
       );
 
     newMember.invitationStatus = InvitationStatus.ACCEPTED;
@@ -77,6 +71,23 @@ export class MemberService {
     );
 
     return requestToJoin;
+  }
+
+  public async acceptRequestToJoin(memberId: string): Promise<Member> {
+    const newMember: Member = await this.membersService.findOneById(memberId);
+    if (
+      newMember.requestStatus !== RequestStatus.ACCEPTED &&
+      newMember.requestStatus !== RequestStatus.SENDED
+    )
+      throw new BadRequestException(
+        `The request was already ${newMember.requestStatus}`,
+      );
+
+    newMember.requestStatus = RequestStatus.ACCEPTED;
+
+    await this.membersService.save(newMember);
+
+    return newMember;
   }
 
   private async createInvitation(

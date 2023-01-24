@@ -58,8 +58,17 @@ export class MembersService {
       return members;
     } catch (error) {
       throw new InternalServerErrorException(
-        `Members the channel ${channelId} could not found`,
+        `Members of the channel ${channelId} could not found`,
       );
+    }
+  }
+
+  public async findOneById(id: string): Promise<Member> {
+    try {
+      const member: Member = await this.membersRepository.findOneBy({ id });
+      return member;
+    } catch (error) {
+      throw new InternalServerErrorException('Member could not be found');
     }
   }
 }

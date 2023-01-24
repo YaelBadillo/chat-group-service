@@ -5,7 +5,7 @@ import {
   HttpStatus,
   Param,
   Post,
-  Patch
+  Patch,
 } from '@nestjs/common';
 
 import { CreateInvitationsDto } from '../dto';
@@ -18,6 +18,7 @@ import {
   VerifyChannel,
   VerifyMember,
   MemberFromRequest,
+  ChannelOwner,
 } from '../../common/decorators';
 
 @Controller('member')
@@ -27,7 +28,7 @@ export class MemberController {
     private readonly memberGateway: MemberGateway,
   ) {}
 
-  @Post(':channelId/create-invitations')
+  @Post('create-invitations/:channelId')
   @HttpCode(HttpStatus.CREATED)
   public async createInvitations(
     @Param('channelId') channelId: string,
@@ -47,7 +48,7 @@ export class MemberController {
     return invitations;
   }
 
-  @Patch(':channelId/accept-invitation')
+  @Patch('accept-invitation/:channelId')
   @HttpCode(HttpStatus.OK)
   @VerifyMember()
   public async acceptInvitation(
@@ -60,7 +61,7 @@ export class MemberController {
     return newMember;
   }
 
-  @Post(':channelId/create-request-to-join')
+  @Post('create-request-to-join/:channelId')
   @HttpCode(HttpStatus.CREATED)
   @VerifyChannel()
   public async createRequestToJoin(
@@ -79,5 +80,20 @@ export class MemberController {
     );
 
     return requestToJoin;
+  }
+
+  @Patch(':memberId/accept-request-to-join')
+  @HttpCode(HttpStatus.OK)
+  @ChannelOwner()
+  public async acceptRequestToJoin(
+    @Param('memberId') memberId: string,
+  ): Promise<Member> {
+    const newMember: Member = await this.memberService.acceptRequestToJoin(
+      memberId,
+    );
+
+    this.memberGateway.notifyNewMemberToEachActiveMember(newMember);
+
+    return newMember;
   }
 }
