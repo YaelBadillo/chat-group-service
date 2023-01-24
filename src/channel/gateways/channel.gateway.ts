@@ -1,55 +1,74 @@
 import {
-  SubscribeMessage,
+  BadRequestException,
+  UnauthorizedException,
+  Logger,
+} from '@nestjs/common';
+import {
   WebSocketGateway,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  ConnectedSocket,
-  MessageBody,
 } from '@nestjs/websockets';
-import { BadRequestException } from '@nestjs/common';
+import { JwtService, JwtModuleOptions } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 import { Socket } from 'socket.io';
 
-import { MembersService } from '../../common/services';
-import { Member } from '../../entities';
-import { WsJwtAuth } from '../../common/decorators';
-import { HandleMessageDto } from '../dto';
-import { ChannelService } from '../services';
+import { MembersService, UsersService } from '../../common/services';
+import { Member, User } from '../../entities';
 
 @WebSocketGateway({ namespace: 'channel' })
 export class ChannelGateway
-  implements OnGatewayConnection
+  implements OnGatewayConnection, OnGatewayDisconnect
 {
+  private readonly logger = new Logger(ChannelGateway.name);
+
   constructor(
-    private readonly membersService: MembersService) {}
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+    private readonly usersService: UsersService,
+    private readonly membersService: MembersService,
+  ) {}
 
   public async handleConnection(client: Socket): Promise<void> {
-    const userId: string | string[] = client.handshake.query?.userId;
-    if (!userId) throw new BadRequestException('Please provide a user id');
+    const token: string =
+      client.handshake.auth?.token || client.handshake.headers?.token;
+    if (!token) throw new UnauthorizedException('No token provided');
 
-    if (userId instanceof Array<string>)
+    let name: string;
+    try {
+      name = this.jwtService.verify<{ name: string }>(token, {
+        ...this.configService.get<JwtModuleOptions>('jwt'),
+      }).name;
+    } catch (error) {
+      this.logger.error('Invalid token');
+      client.emit('validation', 'Invalid token');
+      client.disconnect();
+      return;
+    }
+
+    const user: User = await this.usersService.findOneByName(name);
+    if (!user)
       throw new BadRequestException(
-        'The userId query parameter should be a string',
+        'User does not exists, please authenticate',
       );
 
+    client.data.user = user;
+
     const userMembers: Member[] = await this.membersService.getAllByUserId(
-      userId,
+      user.id,
     );
 
     userMembers.forEach((userMember) => client.join(userMember.channelId));
   }
 
-  @SubscribeMessage('message')
-  @WsJwtAuth()
-  public async handleMessage(
-    @MessageBody() handleMessageDto: HandleMessageDto,
-    @ConnectedSocket() client: Socket,
-  ) {
-    const message = { 
-      content: handleMessageDto.content, 
-      userName: client.data.user.name 
-    };
+  public async handleDisconnect(client: Socket): Promise<void> {
+    const user: User = client.data.user;
 
-    client.to(handleMessageDto.channelId).emit(JSON.stringify(message));
+    delete client.data.user;
+
+    const userMembers: Member[] = await this.membersService.getAllByUserId(
+      user.id,
+    );
+    userMembers.forEach((userMember) => client.leave(userMember.channelId));
   }
 }
