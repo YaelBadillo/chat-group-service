@@ -141,4 +141,47 @@ describe('UsersService', () => {
       expect(usersRepositoryMock.remove).toBeCalledWith(expectedUser);
     });
   });
+
+  describe('findOneById method', () => {
+    let idMock: string;
+
+    beforeEach(() => {
+      idMock = chance.string({ length: 20 });
+
+      usersRepositoryMock.findOneBy.mockReturnValue((async () => new User())());
+    });
+
+    it('should return the found user', async () => {
+      const userMock: User = userMockFactory(chance);
+      userMock.id = idMock;
+      const expectedUser: Partial<User> = {
+        ...userMock,
+      };
+      usersRepositoryMock.findOneBy.mockReturnValue((async () => userMock)());
+
+      const result: User = await service.findOneById(idMock);
+
+      expect(result).toEqual(expectedUser);
+    });
+
+    it('should return null if the user is not found', async () => {
+      usersRepositoryMock.findOneBy.mockReturnValue((async () => null)());
+
+      const result: User = await service.findOneById(idMock);
+
+      expect(result).toBeNull();
+    });
+
+    it('should throw if user could not be found', async () => {
+      const expectedErrorMessage = 'User could not be found';
+      usersRepositoryMock.findOneBy.mockImplementation(() => {
+        throw new Error();
+      });
+
+      const execute = () => service.findOneById(idMock);
+
+      await expect(execute).rejects.toThrowError(InternalServerErrorException);
+      await expect(execute).rejects.toThrow(expectedErrorMessage);
+    });
+  });
 });

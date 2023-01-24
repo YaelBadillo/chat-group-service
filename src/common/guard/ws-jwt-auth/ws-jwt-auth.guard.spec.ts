@@ -6,12 +6,12 @@ import { WsArgumentsHost } from '@nestjs/common/interfaces';
 
 import { Chance } from 'chance';
 import { mock } from 'jest-mock-extended';
-import { Socket } from 'socket.io';
 
 import { WsJwtAuthGuard } from './ws-jwt-auth.guard';
 import { UsersService } from '../../services';
 import { User } from '../../../entities';
 import { userMockFactory } from '../../../../test/utils/entity-mocks';
+import { SocketWithUser } from '../../types';
 
 describe('WsJwtAuthGuard', () => {
   let guard: WsJwtAuthGuard;
@@ -52,12 +52,12 @@ describe('WsJwtAuthGuard', () => {
   describe('canActivate method', () => {
     let contextMock: jest.Mocked<ExecutionContext>;
     let wsArgumentsHost: jest.Mocked<WsArgumentsHost>;
-    let socketMock: Socket;
+    let socketMock: SocketWithUser;
 
     beforeEach(() => {
       contextMock = mock<ExecutionContext>();
       wsArgumentsHost = mock<WsArgumentsHost>();
-      socketMock = mock<Socket>();
+      socketMock = mock<SocketWithUser>();
 
       contextMock.switchToWs.mockReturnValue(wsArgumentsHost);
       wsArgumentsHost.getClient.mockReturnValue(socketMock);
@@ -107,16 +107,14 @@ describe('WsJwtAuthGuard', () => {
       await expect(execute).rejects.toThrow(expectedErrorMessage);
     });
 
-    it('should attach user the socket', async () => {
+    it('should attach user to the client object', async () => {
       const userMock: User = userMockFactory(chance);
       const expectedUser: User = { ...userMock };
-      usersServiceMock.findOneByName.mockReturnValue(
-        (async () => userMock)(),
-      );
+      usersServiceMock.findOneByName.mockReturnValue((async () => userMock)());
 
       await guard.canActivate(contextMock);
 
-      expect(socketMock.data.user).toEqual(expectedUser);
+      expect(socketMock.user).toEqual(expectedUser);
     });
 
     it('should return true if can permission', async () => {

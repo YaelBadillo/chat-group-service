@@ -2,31 +2,36 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  BadRequestException,
+  ContextType,
   UnauthorizedException,
 } from '@nestjs/common';
 
-import { ChannelsService } from '../../services';
-
-import { ParamsWithChannelId, ChannelOwnerRequest } from '../../interfaces';
-import { Channel } from '../../../entities';
+import { ChannelOwnerRequest } from '../../interfaces';
+import { ChannelOwnerSocket } from '../../types';
+import { User, Channel } from '../../../entities';
 
 @Injectable()
 export class ChannelOwnerGuard implements CanActivate {
-  constructor(private readonly channelsService: ChannelsService) {}
+  public canActivate(context: ExecutionContext): boolean {
+    const executionContextType: ContextType = context.getType<ContextType>();
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request: ChannelOwnerRequest = context.switchToHttp().getRequest();
+    let user: User;
+    let channel: Channel;
 
-    const { channelId }: ParamsWithChannelId = request.params;
-    const channel: Channel = await this.channelsService.findOneById(channelId);
-    if (!channel) throw new BadRequestException('Channel does not exists');
+    if (executionContextType === 'http') {
+      const request: ChannelOwnerRequest = context.switchToHttp().getRequest();
+      user = request.user;
+      channel = request.channel;
+    }
 
-    const { user }: ChannelOwnerRequest = request;
+    if (executionContextType === 'ws') {
+      const client: ChannelOwnerSocket = context.switchToWs().getClient();
+      user = client.user;
+      channel = client.channel;
+    }
+
     if (user.id !== channel.ownerId)
       throw new UnauthorizedException('You are not the owner of this channel');
-
-    request.channel = channel;
 
     return true;
   }
