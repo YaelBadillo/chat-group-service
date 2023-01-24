@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Post } from '@nestjs/common';
 
 import {
   ChannelOwner,
@@ -21,6 +21,7 @@ export class ChannelController {
   ) {}
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   public createChannel(
     @UserFromRequest() user: User,
     @Body() createChannelDto: CreateChannelDto,
@@ -30,11 +31,13 @@ export class ChannelController {
 
   @Get()
   @Public()
+  @HttpCode(HttpStatus.OK)
   public getAll(): Promise<Channel[]> {
     return this.channelService.getAll();
   }
 
   @Patch(':channelId')
+  @HttpCode(HttpStatus.OK)
   @ChannelOwner()
   public async update(
     @ChannelFromRequest() channel: Channel,
@@ -51,6 +54,7 @@ export class ChannelController {
   }
 
   @Delete(':channelId')
+  @HttpCode(HttpStatus.OK)
   @ChannelOwner()
   public async delete(
     @UserFromRequest() user: User,
