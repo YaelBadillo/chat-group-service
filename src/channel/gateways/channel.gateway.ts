@@ -7,20 +7,24 @@ import {
   WebSocketGateway,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  WebSocketServer,
 } from '@nestjs/websockets';
 import { JwtService, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
 import { MembersService, UsersService } from '../../common/services';
-import { Member, User } from '../../entities';
+import { Channel, Member, User } from '../../entities';
 
 @WebSocketGateway({ namespace: 'channel' })
 export class ChannelGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   private readonly logger = new Logger(ChannelGateway.name);
+
+  @WebSocketServer()
+  private readonly server: Server;
 
   constructor(
     private readonly jwtService: JwtService,
@@ -70,5 +74,17 @@ export class ChannelGateway
       user.id,
     );
     userMembers.forEach((userMember) => client.leave(userMember.channelId));
+  }
+
+  public notifyUpdateToEachActiveMembers(updatedChannel: Channel): void {
+    const updatedChannelString: string = JSON.stringify(updatedChannel);
+    this.server
+      .to(updatedChannel.id)
+      .emit('handleUpdate', updatedChannelString);
+  }
+
+  public notifyDeleteToEachActiveMembers(deletedChannel: Channel): void {
+    const message: string = `The channel ${deletedChannel.name} was deleted`;
+    this.server.to(deletedChannel.id).emit('handleDelete', message);
   }
 }

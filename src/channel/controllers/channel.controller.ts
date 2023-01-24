@@ -11,10 +11,14 @@ import { Channel, User } from '../../entities';
 import { CreateChannelDto, UpdateChannelDto, DeleteChannelDto } from '../dto';
 import { StatusResponse } from '../../common/interfaces';
 import { CreateChannelResponse } from '../types';
+import { ChannelGateway } from '../gateways';
 
 @Controller('channel')
 export class ChannelController {
-  constructor(private readonly channelService: ChannelService) {}
+  constructor(
+    private readonly channelService: ChannelService,
+    private readonly channelGateway: ChannelGateway,
+  ) {}
 
   @Post()
   public createChannel(
@@ -32,20 +36,35 @@ export class ChannelController {
 
   @Patch(':channelId')
   @ChannelOwner()
-  public update(
+  public async update(
     @ChannelFromRequest() channel: Channel,
     @Body() updateChannelDto: UpdateChannelDto,
   ): Promise<Channel> {
-    return this.channelService.update(channel, updateChannelDto);
+    const updatedChannel: Channel = await this.channelService.update(
+      channel,
+      updateChannelDto,
+    );
+
+    this.channelGateway.notifyUpdateToEachActiveMembers(updatedChannel);
+
+    return updatedChannel;
   }
 
   @Delete(':channelId')
   @ChannelOwner()
-  public delete(
+  public async delete(
     @UserFromRequest() user: User,
     @ChannelFromRequest() channel: Channel,
     @Body() deleteChannelDto: DeleteChannelDto,
   ): Promise<StatusResponse> {
-    return this.channelService.delete(user, channel, deleteChannelDto);
+    const statusResponse: StatusResponse = await this.channelService.delete(
+      user,
+      channel,
+      deleteChannelDto,
+    );
+
+    this.channelGateway.notifyDeleteToEachActiveMembers(channel);
+
+    return statusResponse;
   }
 }
