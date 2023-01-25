@@ -3,40 +3,36 @@ import {
   SubscribeMessage,
   MessageBody,
   OnGatewayConnection,
+  OnGatewayDisconnect,
   ConnectedSocket,
 } from '@nestjs/websockets';
-import { BadRequestException } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 import { Socket } from 'socket.io';
 
 import { MessageService } from '../services';
 import { CreateMessageDto } from '../dto/create-message.dto';
-import { UpdateMessageDto } from '../dto/update-message.dto';
-import { MembersService } from '../../common/services';
-import { Member, Message } from '../../entities';
+import { MembersService, UsersService } from '../../common/services';
+import { Message } from '../../entities';
 import { WsJwtAuth } from '../../common/decorators';
+import { VerifyChannelConnectionGateway } from '../../common/gateways';
 
 @WebSocketGateway({ namespace: 'message' })
-export class MessageGateway implements OnGatewayConnection {
+export class MessageGateway
+  extends VerifyChannelConnectionGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   constructor(
+    protected readonly jwtService: JwtService,
+    protected readonly configService: ConfigService,
+    protected readonly usersService: UsersService,
+    protected readonly membersService: MembersService,
     private readonly messageService: MessageService,
-    private readonly membersService: MembersService,
-  ) {}
-
-  public async handleConnection(client: Socket): Promise<void> {
-    const userId: string | string[] = client.handshake.query?.userId;
-    if (!userId) throw new BadRequestException('Please provide a user id');
-
-    if (userId instanceof Array<string>)
-      throw new BadRequestException(
-        'The userId query parameter should be a string',
-      );
-
-    const userMembers: Member[] = await this.membersService.getAllByUserId(
-      userId,
-    );
-
-    userMembers.forEach((userMember) => client.join(userMember.channelId));
+  ) {
+    super(jwtService, configService, usersService, membersService);
+    this.logger = new Logger(MessageGateway.name);
   }
 
   @SubscribeMessage('createMessage')
@@ -48,26 +44,6 @@ export class MessageGateway implements OnGatewayConnection {
     const message: Message = await this.messageService.create(createMessageDto);
     const messageString: string = JSON.stringify(message);
 
-    client.to(createMessageDto.channelId).emit(messageString);
-  }
-
-  @SubscribeMessage('findAllMessage')
-  findAll() {
-    return this.messageService.findAll();
-  }
-
-  @SubscribeMessage('findOneMessage')
-  findOne(@MessageBody() id: number) {
-    return this.messageService.findOne(id);
-  }
-
-  @SubscribeMessage('updateMessage')
-  update(@MessageBody() updateMessageDto: UpdateMessageDto) {
-    return this.messageService.update(updateMessageDto.id, updateMessageDto);
-  }
-
-  @SubscribeMessage('removeMessage')
-  remove(@MessageBody() id: number) {
-    return this.messageService.remove(id);
+    client.to(createMessageDto.channelId).emit('handleMessage', messageString);
   }
 }
