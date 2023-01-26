@@ -22,4 +22,22 @@ export class MessagesService {
       );
     }
   }
+
+  public async findOneByIdAndMemberId(id: string, memberId:string): Promise<Message> {
+    try {
+      const message: Message = await this.messageRepository.findOneBy({ id, memberId });
+      return message;
+    } catch (error) {
+      throw new InternalServerErrorException('Message could not be found');
+    }
+  }
+
+  public async remove(message: Message): Promise<Message> {
+    try {
+      await this.messageRepository.remove(message);
+      return message;
+    } catch (error) {
+      throw new InternalServerErrorException('Message could not be removed');
+    }
+  }
 }
