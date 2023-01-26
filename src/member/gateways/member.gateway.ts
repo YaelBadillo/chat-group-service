@@ -16,55 +16,32 @@ import { Server, Socket } from 'socket.io';
 
 import { MembersService, UsersService } from '../../common/services';
 import { Member, User } from '../../entities';
+import { VerifyConnectionGateway } from '../../common/gateways';
 
 @WebSocketGateway({ namespace: 'member' })
-export class MemberGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  private readonly logger = new Logger(MemberGateway.name);
-
+export class MemberGateway
+  extends VerifyConnectionGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   private readonly server: Server;
 
   constructor(
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
-    private readonly usersService: UsersService,
+    protected readonly jwtService: JwtService,
+    protected readonly configService: ConfigService,
+    protected readonly usersService: UsersService,
     private readonly membersService: MembersService,
-  ) {}
-
-  public async handleConnection(client: Socket) {
-    const token: string =
-      client.handshake.auth?.token || client.handshake.headers?.token;
-    if (!token) throw new UnauthorizedException('No token provided');
-
-    let name: string;
-    try {
-      name = this.jwtService.verify<{ name: string }>(token, {
-        ...this.configService.get<JwtModuleOptions>('jwt'),
-      }).name;
-    } catch (error) {
-      this.logger.error('Invalid token');
-      client.emit('validation', 'Invalid token');
-      client.disconnect();
-      return;
-    }
-
-    const user: User = await this.usersService.findOneByName(name);
-    if (!user)
-      throw new BadRequestException(
-        'User does not exists, please authenticate',
-      );
-
-    client.data.user = user;
-
-    client.join(user.id);
+  ) {
+    super(jwtService, configService, usersService);
+    this.logger = new Logger(MemberGateway.name);
   }
 
-  public handleDisconnect(client: Socket): void {
+  public async handleConnection(client: Socket) {
+    await super.handleConnection(client);
+
     const user: User = client.data.user;
 
-    delete client.data.user;
-
-    client.leave(user.id);
+    client.join(user.id);
   }
 
   public sendInvitationsToEachActiveUser(invitations: Member[]): void {
