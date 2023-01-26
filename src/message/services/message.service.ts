@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { CreateMessageDto, UpdateMessageDto } from '../dto';
+import { CreateMessageDto } from '../dto';
 import { MessagesService } from '../../common/services';
 import { Message } from '../../entities';
 
@@ -15,20 +15,13 @@ export class MessageService {
     return this.messagesService.save(messageInstance);
   }
 
-  findAll() {
-    return `This action returns all message`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} message`;
-  }
-
-  update(id: number, updateMessageDto: UpdateMessageDto) {
-    return `This action updates a #${id} message`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} message`;
+  public async delete(id: string, memberId: string) {
+    const message: Message = await this.messagesService.findOneByIdAndMemberId(
+      id,
+      memberId,
+    );
+    
+    await this.messagesService.remove(message);
   }
 
   private createMessageInstance(createMessageDto: CreateMessageDto): Message {
