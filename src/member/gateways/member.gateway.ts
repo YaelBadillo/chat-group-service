@@ -49,7 +49,7 @@ export class MemberGateway
     });
   }
 
-  public async notifyNewMemberToEachActiveMember(
+  public async notifyNewMemberToEachActiveMembers(
     newMember: Member,
   ): Promise<void> {
     const members: Member[] = await this.membersService.findByChannelId(
@@ -63,7 +63,7 @@ export class MemberGateway
     });
   }
 
-  public async sendRequestToJoinToOwnerMember(
+  public async sendRequestToJoinToOwnerMembers(
     ownerId: string,
     requestToJoin: Member,
   ): Promise<void> {

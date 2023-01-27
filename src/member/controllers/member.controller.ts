@@ -56,7 +56,7 @@ export class MemberController {
   ): Promise<Member> {
     const newMember: Member = await this.memberService.acceptInvitation(member);
 
-    this.memberGateway.notifyNewMemberToEachActiveMember(newMember);
+    this.memberGateway.notifyNewMemberToEachActiveMembers(newMember);
 
     return newMember;
   }
@@ -74,7 +74,7 @@ export class MemberController {
       channelId,
     );
 
-    this.memberGateway.sendRequestToJoinToOwnerMember(
+    this.memberGateway.sendRequestToJoinToOwnerMembers(
       channel.ownerId,
       requestToJoin,
     );
@@ -92,7 +92,7 @@ export class MemberController {
       memberId,
     );
 
-    this.memberGateway.notifyNewMemberToEachActiveMember(newMember);
+    this.memberGateway.notifyNewMemberToEachActiveMembers(newMember);
 
     return newMember;
   }
