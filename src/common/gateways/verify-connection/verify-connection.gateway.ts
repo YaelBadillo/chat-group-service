@@ -55,7 +55,6 @@ export class VerifyConnectionGateway
   }
 
   public handleDisconnect(client: Socket): void {
-    const user: User = client.data.user;
     delete client.data.user;
   }
 }
