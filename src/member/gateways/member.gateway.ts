@@ -22,14 +22,15 @@ export class MemberGateway
   @WebSocketServer()
   private readonly server: Server;
 
+  protected logger = new Logger(MemberGateway.name);
+
   constructor(
-    readonly jwtService: JwtService,
-    readonly configService: ConfigService,
-    readonly usersService: UsersService,
+    protected readonly jwtService: JwtService,
+    protected readonly configService: ConfigService,
+    protected readonly usersService: UsersService,
     private readonly membersService: MembersService,
   ) {
-    super(jwtService, configService, usersService);
-    this.logger = new Logger(MemberGateway.name);
+    super();
   }
 
   public async handleConnection(client: Socket) {

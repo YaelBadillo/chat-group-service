@@ -28,15 +28,16 @@ export class MessageGateway
   @WebSocketServer()
   protected readonly server: Server;
 
+  protected logger = new Logger(MessageGateway.name);
+
   constructor(
-    readonly jwtService: JwtService,
-    readonly configService: ConfigService,
-    readonly usersService: UsersService,
-    readonly membersService: MembersService,
+    protected readonly jwtService: JwtService,
+    protected readonly configService: ConfigService,
+    protected readonly usersService: UsersService,
+    protected readonly membersService: MembersService,
     private readonly messageService: MessageService,
   ) {
-    super(jwtService, configService, usersService, membersService);
-    this.logger = new Logger(MessageGateway.name);
+    super();
   }
 
   @SubscribeMessage('createMessage')
@@ -51,7 +52,10 @@ export class MessageGateway
     client.to(createMessageDto.channelId).emit('handleMessage', messageString);
   }
 
-  public notifyDeleteToEachActiveMember(channelId: string, messageId: string): void {
+  public notifyDeleteToEachActiveMember(
+    channelId: string,
+    messageId: string,
+  ): void {
     this.server.to(channelId).emit('handleDeletedChannel', messageId);
   }
 }

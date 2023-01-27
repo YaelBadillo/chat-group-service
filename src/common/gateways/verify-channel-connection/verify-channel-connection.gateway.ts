@@ -1,36 +1,19 @@
-import {
-  WebSocketGateway,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-  WebSocketServer,
-} from '@nestjs/websockets';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import { OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 
 import { RemoteSocket, Server, Socket } from 'socket.io';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 import { VerifyConnectionGateway } from '../verify-connection/verify-connection.gateway';
 import { Member, User } from '../../../entities';
-import { UsersService, MembersService } from '../../services';
+import { MembersService } from '../../services';
 import { AddRoom } from './interfaces';
 
-@WebSocketGateway()
-export class VerifyChannelConnectionGateway
+export abstract class VerifyChannelConnectionGateway
   extends VerifyConnectionGateway
   implements OnGatewayConnection, OnGatewayDisconnect, AddRoom
 {
-  @WebSocketServer()
-  protected readonly server: Server;
-
-  constructor(
-    protected readonly jwtService: JwtService,
-    protected readonly configService: ConfigService,
-    protected readonly usersService: UsersService,
-    protected readonly membersService: MembersService,
-  ) {
-    super(jwtService, configService, usersService);
-  }
+  protected abstract readonly server: Server;
+  protected abstract readonly membersService: MembersService;
 
   public async handleConnection(client: Socket): Promise<void> {
     await super.handleConnection(client);

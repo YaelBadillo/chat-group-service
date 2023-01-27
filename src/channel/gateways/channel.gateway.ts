@@ -22,14 +22,15 @@ export class ChannelGateway
   @WebSocketServer()
   protected readonly server: Server;
 
+  protected logger = new Logger(ChannelGateway.name);
+
   constructor(
-    readonly jwtService: JwtService,
-    readonly configService: ConfigService,
-    readonly usersService: UsersService,
-    readonly membersService: MembersService,
+    protected readonly jwtService: JwtService,
+    protected readonly configService: ConfigService,
+    protected readonly usersService: UsersService,
+    protected readonly membersService: MembersService,
   ) {
-    super(jwtService, configService, usersService, membersService);
-    this.logger = new Logger(ChannelGateway.name);
+    super();
   }
 
   public notifyUpdateToEachActiveMembers(updatedChannel: Channel): void {
