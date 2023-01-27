@@ -28,7 +28,7 @@ export class MessageGateway
   @WebSocketServer()
   protected readonly server: Server;
 
-  protected logger = new Logger(MessageGateway.name);
+  protected readonly logger = new Logger(MessageGateway.name);
 
   constructor(
     protected readonly jwtService: JwtService,

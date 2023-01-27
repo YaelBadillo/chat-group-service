@@ -22,7 +22,7 @@ export class MemberGateway
   @WebSocketServer()
   private readonly server: Server;
 
-  protected logger = new Logger(MemberGateway.name);
+  protected readonly logger = new Logger(MemberGateway.name);
 
   constructor(
     protected readonly jwtService: JwtService,

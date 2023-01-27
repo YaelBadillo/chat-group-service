@@ -22,7 +22,7 @@ export class ChannelGateway
   @WebSocketServer()
   protected readonly server: Server;
 
-  protected logger = new Logger(ChannelGateway.name);
+  protected readonly logger = new Logger(ChannelGateway.name);
 
   constructor(
     protected readonly jwtService: JwtService,
