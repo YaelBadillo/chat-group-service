@@ -20,7 +20,9 @@ export class ChannelGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer()
-  private readonly server: Server;
+  protected readonly server: Server;
+
+  protected readonly logger = new Logger(ChannelGateway.name);
 
   constructor(
     protected readonly jwtService: JwtService,
@@ -28,8 +30,7 @@ export class ChannelGateway
     protected readonly usersService: UsersService,
     protected readonly membersService: MembersService,
   ) {
-    super(jwtService, configService, usersService, membersService);
-    this.logger = new Logger(ChannelGateway.name);
+    super();
   }
 
   public notifyUpdateToEachActiveMembers(updatedChannel: Channel): void {

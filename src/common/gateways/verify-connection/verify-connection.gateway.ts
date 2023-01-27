@@ -4,7 +4,6 @@ import {
   Logger,
 } from '@nestjs/common';
 import {
-  WebSocketGateway,
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
@@ -16,17 +15,13 @@ import { Socket } from 'socket.io';
 import { UsersService } from '../../services';
 import { User } from '../../../entities';
 
-@WebSocketGateway()
-export class VerifyConnectionGateway
+export abstract class VerifyConnectionGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
-  protected logger: Logger;
-
-  constructor(
-    protected readonly jwtService: JwtService,
-    protected readonly configService: ConfigService,
-    protected readonly usersService: UsersService,
-  ) {}
+  protected abstract readonly logger: Logger;
+  protected abstract readonly jwtService: JwtService;
+  protected abstract readonly configService: ConfigService;
+  protected abstract readonly usersService: UsersService;
 
   public async handleConnection(client: Socket) {
     const token: string =

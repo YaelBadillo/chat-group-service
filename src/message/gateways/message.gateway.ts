@@ -26,7 +26,9 @@ export class MessageGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer()
-  private readonly server: Server;
+  protected readonly server: Server;
+
+  protected readonly logger = new Logger(MessageGateway.name);
 
   constructor(
     protected readonly jwtService: JwtService,
@@ -35,8 +37,7 @@ export class MessageGateway
     protected readonly membersService: MembersService,
     private readonly messageService: MessageService,
   ) {
-    super(jwtService, configService, usersService, membersService);
-    this.logger = new Logger(MessageGateway.name);
+    super();
   }
 
   @SubscribeMessage('createMessage')
@@ -51,7 +52,10 @@ export class MessageGateway
     client.to(createMessageDto.channelId).emit('handleMessage', messageString);
   }
 
-  public notifyDeleteToEachActiveMember(channelId: string, messageId: string): void {
+  public notifyDeleteToEachActiveMember(
+    channelId: string,
+    messageId: string,
+  ): void {
     this.server.to(channelId).emit('handleDeletedChannel', messageId);
   }
 }
