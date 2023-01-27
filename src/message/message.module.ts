@@ -6,5 +6,6 @@ import { MessageGateway } from './gateways';
 
 @Module({
   providers: [MessageGateway, MessageService, JwtService],
+  exports: [MessageGateway],
 })
 export class MessageModule {}

@@ -20,12 +20,16 @@ import {
   MemberFromRequest,
   ChannelOwner,
 } from '../../common/decorators';
+import { ChannelGateway } from '../../channel/gateways';
+import { MessageGateway } from '../../message/gateways';
 
 @Controller('member')
 export class MemberController {
   constructor(
     private readonly memberService: MemberService,
     private readonly memberGateway: MemberGateway,
+    private readonly channelGateway: ChannelGateway,
+    private readonly messageGateway: MessageGateway,
   ) {}
 
   @Post('create-invitations/:channelId')
@@ -57,6 +61,8 @@ export class MemberController {
     const newMember: Member = await this.memberService.acceptInvitation(member);
 
     this.memberGateway.notifyNewMemberToEachActiveMembers(newMember);
+    this.channelGateway.handleAddRoom(member.userId, member.channelId);
+    this.messageGateway.handleAddRoom(member.userId, member.channelId);
 
     return newMember;
   }
@@ -93,6 +99,8 @@ export class MemberController {
     );
 
     this.memberGateway.notifyNewMemberToEachActiveMembers(newMember);
+    this.channelGateway.handleAddRoom(newMember.userId, newMember.channelId);
+    this.messageGateway.handleAddRoom(newMember.userId, newMember.channelId);
 
     return newMember;
   }
