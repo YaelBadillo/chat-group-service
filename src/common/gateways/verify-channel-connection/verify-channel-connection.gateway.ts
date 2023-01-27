@@ -34,6 +34,6 @@ export class VerifyChannelConnectionGateway
       user.id,
     );
 
-    userMembers.forEach((userMember) => client.join(userMember.channelId));
+    userMembers.forEach(({ channelId }) => client.join(channelId));
   }
 }
