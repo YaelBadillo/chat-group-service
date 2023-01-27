@@ -3,10 +3,7 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
-import {
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-} from '@nestjs/websockets';
+import { OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { JwtModuleOptions, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
