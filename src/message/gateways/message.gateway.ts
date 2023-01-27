@@ -26,13 +26,13 @@ export class MessageGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer()
-  private readonly server: Server;
+  protected readonly server: Server;
 
   constructor(
-    protected readonly jwtService: JwtService,
-    protected readonly configService: ConfigService,
-    protected readonly usersService: UsersService,
-    protected readonly membersService: MembersService,
+    readonly jwtService: JwtService,
+    readonly configService: ConfigService,
+    readonly usersService: UsersService,
+    readonly membersService: MembersService,
     private readonly messageService: MessageService,
   ) {
     super(jwtService, configService, usersService, membersService);

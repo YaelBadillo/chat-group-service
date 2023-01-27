@@ -23,9 +23,9 @@ export class MemberGateway
   private readonly server: Server;
 
   constructor(
-    protected readonly jwtService: JwtService,
-    protected readonly configService: ConfigService,
-    protected readonly usersService: UsersService,
+    readonly jwtService: JwtService,
+    readonly configService: ConfigService,
+    readonly usersService: UsersService,
     private readonly membersService: MembersService,
   ) {
     super(jwtService, configService, usersService);
