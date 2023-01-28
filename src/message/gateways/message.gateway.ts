@@ -21,10 +21,7 @@ import { WsJwtAuth } from '../../common/decorators';
 import { VerifyChannelConnectionGateway } from '../../common/gateways';
 
 @WebSocketGateway({ namespace: 'message' })
-export class MessageGateway
-  extends VerifyChannelConnectionGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class MessageGateway extends VerifyChannelConnectionGateway {
   @WebSocketServer()
   protected readonly server: Server;
 

@@ -15,10 +15,7 @@ import { Channel } from '../../entities';
 import { VerifyChannelConnectionGateway } from '../../common/gateways';
 
 @WebSocketGateway({ namespace: 'channel' })
-export class ChannelGateway
-  extends VerifyChannelConnectionGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class ChannelGateway extends VerifyChannelConnectionGateway {
   @WebSocketServer()
   protected readonly server: Server;
 

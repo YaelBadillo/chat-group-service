@@ -15,10 +15,7 @@ import { Member, User } from '../../entities';
 import { VerifyConnectionGateway } from '../../common/gateways';
 
 @WebSocketGateway({ namespace: 'member' })
-export class MemberGateway
-  extends VerifyConnectionGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class MemberGateway extends VerifyConnectionGateway {
   @WebSocketServer()
   private readonly server: Server;
 
