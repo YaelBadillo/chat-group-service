@@ -91,6 +91,8 @@ export class ChannelController {
     );
 
     this.channelGateway.notifyDeleteToEachActiveMembers(channel);
+    this.channelGateway.handleRemoveEachActiveMemberFromChannel(channel.id);
+    this.messageGateway.handleRemoveEachActiveMemberFromChannel(channel.id);
 
     return statusResponse;
   }

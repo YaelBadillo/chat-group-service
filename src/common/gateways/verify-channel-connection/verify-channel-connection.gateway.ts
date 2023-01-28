@@ -6,11 +6,16 @@ import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { VerifyConnectionGateway } from '../verify-connection/verify-connection.gateway';
 import { Member, User } from '../../../entities';
 import { MembersService } from '../../services';
-import { AddRoom } from './interfaces';
+import { AddRoom, LeaveRoom, RemoveEachMember } from './interfaces';
 
 export abstract class VerifyChannelConnectionGateway
   extends VerifyConnectionGateway
-  implements OnGatewayConnection, OnGatewayDisconnect, AddRoom
+  implements
+    OnGatewayConnection,
+    OnGatewayDisconnect,
+    AddRoom,
+    LeaveRoom,
+    RemoveEachMember
 {
   protected abstract readonly server: Server;
   protected abstract readonly membersService: MembersService;
@@ -32,6 +37,26 @@ export abstract class VerifyChannelConnectionGateway
     );
 
     socket.join(channelId);
+  }
+
+  public async handleLeaveRoom(
+    userId: string,
+    channelId: string,
+  ): Promise<void> {
+    const socket: RemoteSocket<DefaultEventsMap, any> = await this.fetchUser(
+      userId,
+    );
+
+    socket.leave(channelId);
+  }
+
+  public async handleRemoveEachActiveMemberFromChannel(
+    channelId: string,
+  ): Promise<void> {
+    const sockets: RemoteSocket<DefaultEventsMap, any>[] =
+      await this.server.fetchSockets();
+
+    sockets.forEach((socket) => socket.leave(channelId));
   }
 
   private async fetchUser(
