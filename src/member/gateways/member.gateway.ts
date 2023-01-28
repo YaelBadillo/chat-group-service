@@ -2,7 +2,6 @@ import {
   WebSocketGateway,
   OnGatewayConnection,
   WebSocketServer,
-  OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -15,7 +14,7 @@ import { Member, User } from '../../entities';
 import { VerifyConnectionGateway } from '../../common/gateways';
 
 @WebSocketGateway({ namespace: 'member' })
-export class MemberGateway extends VerifyConnectionGateway {
+export class MemberGateway extends VerifyConnectionGateway implements OnGatewayConnection {
   @WebSocketServer()
   private readonly server: Server;
 
