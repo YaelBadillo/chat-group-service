@@ -16,7 +16,7 @@ import { VerifyConnectionGateway } from '../../common/gateways';
 @WebSocketGateway({ namespace: 'member' })
 export class MemberGateway extends VerifyConnectionGateway implements OnGatewayConnection {
   @WebSocketServer()
-  private readonly server: Server;
+  protected readonly server: Server;
 
   protected readonly logger = new Logger(MemberGateway.name);
 

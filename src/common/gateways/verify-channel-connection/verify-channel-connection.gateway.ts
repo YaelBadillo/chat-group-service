@@ -17,7 +17,6 @@ export abstract class VerifyChannelConnectionGateway
     LeaveRoom,
     RemoveEachMember
 {
-  protected abstract readonly server: Server;
   protected abstract readonly membersService: MembersService;
 
   public async handleConnection(client: Socket): Promise<void> {

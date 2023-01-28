@@ -7,14 +7,16 @@ import { OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { JwtModuleOptions, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
 import { UsersService } from '../../services';
 import { User } from '../../../entities';
+import { NotifyEachClient } from './interfaces';
 
 export abstract class VerifyConnectionGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
+  implements OnGatewayConnection, OnGatewayDisconnect, NotifyEachClient
 {
+  protected abstract readonly server: Server;
   protected abstract readonly logger: Logger;
   protected abstract readonly jwtService: JwtService;
   protected abstract readonly configService: ConfigService;
@@ -48,5 +50,13 @@ export abstract class VerifyConnectionGateway
 
   public handleDisconnect(client: Socket): void {
     delete client.data.user;
+  }
+
+  public async notifyEachActiveClientOfARoom(
+    room: string,
+    eventName: string,
+    message: unknown,
+  ): Promise<void> {
+    this.server.to(room).emit(eventName, message)
   }
 }
