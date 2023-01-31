@@ -7,6 +7,7 @@ import { VerifyConnectionGateway } from '../verify-connection/verify-connection.
 import { Member, User } from '../../../entities';
 import { MembersService } from '../../services';
 import { AddRoom, LeaveRoom, RemoveEachMember } from './interfaces';
+import { SocketData } from '../../interfaces';
 
 export abstract class VerifyChannelConnectionGateway
   extends VerifyConnectionGateway
@@ -19,7 +20,14 @@ export abstract class VerifyChannelConnectionGateway
 {
   protected abstract readonly membersService: MembersService;
 
-  public async handleConnection(client: Socket): Promise<void> {
+  public async handleConnection(
+    client: Socket<
+      DefaultEventsMap,
+      DefaultEventsMap,
+      DefaultEventsMap,
+      SocketData
+    >,
+  ): Promise<void> {
     await super.handleConnection(client);
 
     const user: User = client.data.user;
@@ -31,9 +39,8 @@ export abstract class VerifyChannelConnectionGateway
   }
 
   public async handleAddRoom(userId: string, channelId: string): Promise<void> {
-    const socket: RemoteSocket<DefaultEventsMap, any> = await this.fetchUser(
-      userId,
-    );
+    const socket: RemoteSocket<DefaultEventsMap, SocketData> =
+      await this.fetchUser(userId);
 
     socket.join(channelId);
   }
@@ -42,9 +49,8 @@ export abstract class VerifyChannelConnectionGateway
     userId: string,
     channelId: string,
   ): Promise<void> {
-    const socket: RemoteSocket<DefaultEventsMap, any> = await this.fetchUser(
-      userId,
-    );
+    const socket: RemoteSocket<DefaultEventsMap, SocketData> =
+      await this.fetchUser(userId);
 
     socket.leave(channelId);
   }
@@ -52,7 +58,7 @@ export abstract class VerifyChannelConnectionGateway
   public async handleRemoveEachActiveMemberFromChannel(
     channelId: string,
   ): Promise<void> {
-    const sockets: RemoteSocket<DefaultEventsMap, any>[] =
+    const sockets: RemoteSocket<DefaultEventsMap, SocketData>[] =
       await this.server.fetchSockets();
 
     sockets.forEach((socket) => socket.leave(channelId));
@@ -60,8 +66,8 @@ export abstract class VerifyChannelConnectionGateway
 
   private async fetchUser(
     userId: string,
-  ): Promise<RemoteSocket<DefaultEventsMap, any>> {
-    const sockets: RemoteSocket<DefaultEventsMap, any>[] =
+  ): Promise<RemoteSocket<DefaultEventsMap, SocketData>> {
+    const sockets: RemoteSocket<DefaultEventsMap, SocketData>[] =
       await this.server.fetchSockets();
 
     return sockets.filter((socket) => socket.data.user.id === userId)[0];

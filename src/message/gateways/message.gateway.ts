@@ -17,11 +17,19 @@ import { MembersService, UsersService } from '../../common/services';
 import { Message } from '../../entities';
 import { WsJwtAuth } from '../../common/decorators';
 import { VerifyChannelConnectionGateway } from '../../common/gateways';
+import { ClientToServerEvents, ServerToClientEvents } from '../interfaces';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
+import { SocketData } from '../../common/interfaces';
 
 @WebSocketGateway({ namespace: 'message' })
 export class MessageGateway extends VerifyChannelConnectionGateway {
   @WebSocketServer()
-  protected readonly server: Server;
+  protected readonly server: Server<
+    ClientToServerEvents,
+    ServerToClientEvents,
+    DefaultEventsMap,
+    SocketData
+  >;
 
   protected readonly logger = new Logger(MessageGateway.name);
 
@@ -42,15 +50,14 @@ export class MessageGateway extends VerifyChannelConnectionGateway {
     @ConnectedSocket() client: Socket,
   ): Promise<void> {
     const message: Message = await this.messageService.create(createMessageDto);
-    const messageString: string = JSON.stringify(message);
 
-    client.to(createMessageDto.channelId).emit('handleMessage', messageString);
+    client.to(createMessageDto.channelId).emit('handleMessage', message);
   }
 
   public notifyDeleteToEachActiveMember(
     channelId: string,
     messageId: string,
   ): void {
-    this.server.to(channelId).emit('handleDeletedChannel', messageId);
+    this.server.to(channelId).emit('handleDeletedMessage', messageId);
   }
 }

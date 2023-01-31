@@ -1,22 +1,26 @@
 import { Logger } from '@nestjs/common';
-import {
-  WebSocketGateway,
-  WebSocketServer,
-} from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
 import { Server } from 'socket.io';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 import { MembersService, UsersService } from '../../common/services';
 import { Channel } from '../../entities';
 import { VerifyChannelConnectionGateway } from '../../common/gateways';
+import { ServerToClientEvents } from '../interfaces';
+import { SocketData } from '../../common/interfaces';
 
 @WebSocketGateway({ namespace: 'channel' })
 export class ChannelGateway extends VerifyChannelConnectionGateway {
   @WebSocketServer()
-  protected readonly server: Server;
-
+  protected readonly server: Server<
+    DefaultEventsMap,
+    ServerToClientEvents,
+    DefaultEventsMap,
+    SocketData
+  >;
   protected readonly logger = new Logger(ChannelGateway.name);
 
   constructor(
@@ -29,14 +33,10 @@ export class ChannelGateway extends VerifyChannelConnectionGateway {
   }
 
   public notifyUpdateToEachActiveMembers(updatedChannel: Channel): void {
-    const updatedChannelString: string = JSON.stringify(updatedChannel);
-    this.server
-      .to(updatedChannel.id)
-      .emit('handleUpdate', updatedChannelString);
+    this.server.to(updatedChannel.id).emit('handleUpdate', updatedChannel);
   }
 
   public notifyDeleteToEachActiveMembers(deletedChannel: Channel): void {
-    const message: string = `The channel ${deletedChannel.name} was deleted`;
-    this.server.to(deletedChannel.id).emit('handleDelete', message);
+    this.server.to(deletedChannel.id).emit('handleDelete', deletedChannel);
   }
 }

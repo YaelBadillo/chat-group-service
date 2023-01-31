@@ -12,11 +12,22 @@ import { Server, Socket } from 'socket.io';
 import { MembersService, UsersService } from '../../common/services';
 import { Member, User } from '../../entities';
 import { VerifyConnectionGateway } from '../../common/gateways';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
+import { ServerToClientEvents } from '../interfaces';
+import { SocketData } from '../../common/interfaces';
 
 @WebSocketGateway({ namespace: 'member' })
-export class MemberGateway extends VerifyConnectionGateway implements OnGatewayConnection {
+export class MemberGateway
+  extends VerifyConnectionGateway
+  implements OnGatewayConnection
+{
   @WebSocketServer()
-  protected readonly server: Server;
+  protected readonly server: Server<
+    DefaultEventsMap,
+    ServerToClientEvents,
+    DefaultEventsMap,
+    SocketData
+  >;
 
   protected readonly logger = new Logger(MemberGateway.name);
 
@@ -29,7 +40,14 @@ export class MemberGateway extends VerifyConnectionGateway implements OnGatewayC
     super();
   }
 
-  public async handleConnection(client: Socket) {
+  public async handleConnection(
+    client: Socket<
+      DefaultEventsMap,
+      ServerToClientEvents,
+      DefaultEventsMap,
+      SocketData
+    >,
+  ) {
     await super.handleConnection(client);
 
     const user: User = client.data.user;
@@ -39,10 +57,7 @@ export class MemberGateway extends VerifyConnectionGateway implements OnGatewayC
 
   public sendInvitationsToEachActiveUser(invitations: Member[]): void {
     invitations.forEach((invitation) => {
-      const invitationString: string = JSON.stringify(invitation);
-      this.server
-        .to(invitation.userId)
-        .emit('handleInvitation', invitationString);
+      this.server.to(invitation.userId).emit('handleInvitation', invitation);
     });
   }
 
@@ -55,8 +70,7 @@ export class MemberGateway extends VerifyConnectionGateway implements OnGatewayC
     members.forEach((member) => {
       if (member.id === newMember.id) return;
 
-      const newMemberString: string = JSON.stringify(newMember);
-      this.server.to(member.userId).emit('handleNewMember', newMemberString);
+      this.server.to(member.userId).emit('handleNewMember', member);
     });
   }
 
