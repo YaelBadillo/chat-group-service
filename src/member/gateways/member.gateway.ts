@@ -8,11 +8,11 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
 import { Server, Socket } from 'socket.io';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 import { MembersService, UsersService } from '../../common/services';
 import { Member, User } from '../../entities';
 import { VerifyConnectionGateway } from '../../common/gateways';
-import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { ServerToClientEvents } from '../interfaces';
 import { SocketData } from '../../common/interfaces';
 

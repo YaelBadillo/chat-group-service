@@ -10,15 +10,15 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
 import { Server, Socket } from 'socket.io';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 import { MessageService } from '../services';
-import { CreateMessageDto } from '../dto/create-message.dto';
+import { CreateMessageDto } from '../dto';
 import { MembersService, UsersService } from '../../common/services';
 import { Message } from '../../entities';
 import { WsJwtAuth } from '../../common/decorators';
 import { VerifyChannelConnectionGateway } from '../../common/gateways';
 import { ClientToServerEvents, ServerToClientEvents } from '../interfaces';
-import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { SocketData } from '../../common/interfaces';
 
 @WebSocketGateway({ namespace: 'message' })
