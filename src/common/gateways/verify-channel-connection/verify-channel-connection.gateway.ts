@@ -1,6 +1,6 @@
 import { OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 
-import { RemoteSocket, Server, Socket } from 'socket.io';
+import { RemoteSocket, Socket } from 'socket.io';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 import { VerifyConnectionGateway } from '../verify-connection/verify-connection.gateway';
