@@ -2,8 +2,6 @@ import {
   WebSocketGateway,
   SubscribeMessage,
   MessageBody,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
   ConnectedSocket,
   WebSocketServer,
 } from '@nestjs/websockets';
@@ -12,21 +10,26 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
 import { Server, Socket } from 'socket.io';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 import { MessageService } from '../services';
-import { CreateMessageDto } from '../dto/create-message.dto';
+import { CreateMessageDto } from '../dto';
 import { MembersService, UsersService } from '../../common/services';
 import { Message } from '../../entities';
 import { WsJwtAuth } from '../../common/decorators';
 import { VerifyChannelConnectionGateway } from '../../common/gateways';
+import { ClientToServerEvents, ServerToClientEvents } from '../interfaces';
+import { SocketData } from '../../common/interfaces';
 
 @WebSocketGateway({ namespace: 'message' })
-export class MessageGateway
-  extends VerifyChannelConnectionGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class MessageGateway extends VerifyChannelConnectionGateway {
   @WebSocketServer()
-  protected readonly server: Server;
+  protected readonly server: Server<
+    ClientToServerEvents,
+    ServerToClientEvents,
+    DefaultEventsMap,
+    SocketData
+  >;
 
   protected readonly logger = new Logger(MessageGateway.name);
 
@@ -47,15 +50,7 @@ export class MessageGateway
     @ConnectedSocket() client: Socket,
   ): Promise<void> {
     const message: Message = await this.messageService.create(createMessageDto);
-    const messageString: string = JSON.stringify(message);
 
-    client.to(createMessageDto.channelId).emit('handleMessage', messageString);
-  }
-
-  public notifyDeleteToEachActiveMember(
-    channelId: string,
-    messageId: string,
-  ): void {
-    this.server.to(channelId).emit('handleDeletedChannel', messageId);
+    client.to(createMessageDto.channelId).emit('handleMessage', message);
   }
 }

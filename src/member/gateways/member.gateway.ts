@@ -2,25 +2,32 @@ import {
   WebSocketGateway,
   OnGatewayConnection,
   WebSocketServer,
-  OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
 import { Server, Socket } from 'socket.io';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 import { MembersService, UsersService } from '../../common/services';
 import { Member, User } from '../../entities';
 import { VerifyConnectionGateway } from '../../common/gateways';
+import { ServerToClientEvents } from '../interfaces';
+import { SocketData } from '../../common/interfaces';
 
 @WebSocketGateway({ namespace: 'member' })
 export class MemberGateway
   extends VerifyConnectionGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
+  implements OnGatewayConnection
 {
   @WebSocketServer()
-  private readonly server: Server;
+  protected readonly server: Server<
+    DefaultEventsMap,
+    ServerToClientEvents,
+    DefaultEventsMap,
+    SocketData
+  >;
 
   protected readonly logger = new Logger(MemberGateway.name);
 
@@ -33,7 +40,14 @@ export class MemberGateway
     super();
   }
 
-  public async handleConnection(client: Socket) {
+  public async handleConnection(
+    client: Socket<
+      DefaultEventsMap,
+      ServerToClientEvents,
+      DefaultEventsMap,
+      SocketData
+    >,
+  ) {
     await super.handleConnection(client);
 
     const user: User = client.data.user;
@@ -43,10 +57,11 @@ export class MemberGateway
 
   public sendInvitationsToEachActiveUser(invitations: Member[]): void {
     invitations.forEach((invitation) => {
-      const invitationString: string = JSON.stringify(invitation);
-      this.server
-        .to(invitation.userId)
-        .emit('handleInvitation', invitationString);
+      this.notifyEachActiveClientOfARoom(
+        invitation.userId,
+        'handleInvitation',
+        invitation,
+      );
     });
   }
 
@@ -59,15 +74,11 @@ export class MemberGateway
     members.forEach((member) => {
       if (member.id === newMember.id) return;
 
-      const newMemberString: string = JSON.stringify(newMember);
-      this.server.to(member.userId).emit('handleNewMember', newMemberString);
+      this.notifyEachActiveClientOfARoom(
+        member.userId,
+        'handleNewMember',
+        member,
+      );
     });
-  }
-
-  public async sendRequestToJoinToOwnerMembers(
-    ownerId: string,
-    requestToJoin: Member,
-  ): Promise<void> {
-    this.server.to(ownerId).emit('handleRequestToJoin', requestToJoin);
   }
 }

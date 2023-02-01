@@ -30,6 +30,9 @@ export class MemberService {
             channelId,
             userName,
           );
+          if (invitation.invitationStatus !== InvitationStatus.SENDED)
+            return null;
+
           return invitation;
         } catch (error) {
           this.logger.log(error.message);
@@ -98,6 +101,10 @@ export class MemberService {
     const user: User = await this.usersService.findOneByName(userName);
     if (!user)
       throw new BadRequestException(`There is no user with name ${userName}`);
+
+    const existingInvitation: Member =
+      await this.membersService.findOneByUserIdAndChannelId(user.id, channelId);
+    if (existingInvitation) return existingInvitation;
 
     const invitationInstance = this.createInvitationInstance(
       user.id,

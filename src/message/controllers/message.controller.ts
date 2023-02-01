@@ -27,7 +27,11 @@ export class MessageController {
 
     await this.messagesService.remove(message);
 
-    this.messageGateway.notifyDeleteToEachActiveMember(channelId, messageId);
+    this.messageGateway.notifyEachActiveClientOfARoom(
+      channelId,
+      'handleDeletedMessage',
+      messageId,
+    );
 
     return message;
   }

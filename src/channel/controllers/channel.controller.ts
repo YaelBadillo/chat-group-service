@@ -21,21 +21,35 @@ import { CreateChannelDto, UpdateChannelDto, DeleteChannelDto } from '../dto';
 import { StatusResponse } from '../../common/interfaces';
 import { CreateChannelResponse } from '../types';
 import { ChannelGateway } from '../gateways';
+import { MessageGateway } from '../../message/gateways/message.gateway';
 
 @Controller('channel')
 export class ChannelController {
   constructor(
     private readonly channelService: ChannelService,
     private readonly channelGateway: ChannelGateway,
+    private readonly messageGateway: MessageGateway,
   ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  public createChannel(
+  public async createChannel(
     @UserFromRequest() user: User,
     @Body() createChannelDto: CreateChannelDto,
   ): Promise<CreateChannelResponse> {
-    return this.channelService.create(user, createChannelDto);
+    const createChannelResponse: CreateChannelResponse =
+      await this.channelService.create(user, createChannelDto);
+
+    this.channelGateway.handleAddRoom(
+      createChannelResponse.channel.ownerId,
+      createChannelResponse.channel.id,
+    );
+    this.messageGateway.handleAddRoom(
+      createChannelResponse.channel.ownerId,
+      createChannelResponse.channel.id,
+    );
+
+    return createChannelResponse;
   }
 
   @Get()
@@ -57,7 +71,11 @@ export class ChannelController {
       updateChannelDto,
     );
 
-    this.channelGateway.notifyUpdateToEachActiveMembers(updatedChannel);
+    this.channelGateway.notifyEachActiveClientOfARoom(
+      updatedChannel.id,
+      'handleUpdate',
+      updatedChannel,
+    );
 
     return updatedChannel;
   }
@@ -76,7 +94,13 @@ export class ChannelController {
       deleteChannelDto,
     );
 
-    this.channelGateway.notifyDeleteToEachActiveMembers(channel);
+    this.channelGateway.notifyEachActiveClientOfARoom(
+      channel.id,
+      'handleDelete',
+      channel,
+    );
+    this.channelGateway.handleRemoveEachActiveMemberFromChannel(channel.id);
+    this.messageGateway.handleRemoveEachActiveMemberFromChannel(channel.id);
 
     return statusResponse;
   }
