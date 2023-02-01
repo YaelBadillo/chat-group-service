@@ -31,12 +31,4 @@ export class ChannelGateway extends VerifyChannelConnectionGateway {
   ) {
     super();
   }
-
-  public notifyUpdateToEachActiveMembers(updatedChannel: Channel): void {
-    this.server.to(updatedChannel.id).emit('handleUpdate', updatedChannel);
-  }
-
-  public notifyDeleteToEachActiveMembers(deletedChannel: Channel): void {
-    this.server.to(deletedChannel.id).emit('handleDelete', deletedChannel);
-  }
 }
