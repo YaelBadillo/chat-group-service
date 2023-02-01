@@ -71,7 +71,11 @@ export class ChannelController {
       updateChannelDto,
     );
 
-    this.channelGateway.notifyUpdateToEachActiveMembers(updatedChannel);
+    this.channelGateway.notifyEachActiveClientOfARoom(
+      updatedChannel.id,
+      'handleUpdate',
+      updatedChannel,
+    );
 
     return updatedChannel;
   }
@@ -90,7 +94,11 @@ export class ChannelController {
       deleteChannelDto,
     );
 
-    this.channelGateway.notifyDeleteToEachActiveMembers(channel);
+    this.channelGateway.notifyEachActiveClientOfARoom(
+      channel.id,
+      'handleDelete',
+      channel,
+    );
     this.channelGateway.handleRemoveEachActiveMemberFromChannel(channel.id);
     this.messageGateway.handleRemoveEachActiveMemberFromChannel(channel.id);
 
