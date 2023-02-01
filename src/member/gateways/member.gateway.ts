@@ -57,7 +57,11 @@ export class MemberGateway
 
   public sendInvitationsToEachActiveUser(invitations: Member[]): void {
     invitations.forEach((invitation) => {
-      this.server.to(invitation.userId).emit('handleInvitation', invitation);
+      this.notifyEachActiveClientOfARoom(
+        invitation.userId,
+        'handleInvitation',
+        invitation,
+      );
     });
   }
 
@@ -70,14 +74,11 @@ export class MemberGateway
     members.forEach((member) => {
       if (member.id === newMember.id) return;
 
-      this.server.to(member.userId).emit('handleNewMember', member);
+      this.notifyEachActiveClientOfARoom(
+        member.userId,
+        'handleNewMember',
+        member,
+      );
     });
-  }
-
-  public async sendRequestToJoinToOwnerMembers(
-    ownerId: string,
-    requestToJoin: Member,
-  ): Promise<void> {
-    this.server.to(ownerId).emit('handleRequestToJoin', requestToJoin);
   }
 }

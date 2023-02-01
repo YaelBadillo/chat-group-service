@@ -80,8 +80,9 @@ export class MemberController {
       channelId,
     );
 
-    this.memberGateway.sendRequestToJoinToOwnerMembers(
+    this.memberGateway.notifyEachActiveClientOfARoom(
       channel.ownerId,
+      'handleRequestToJoin',
       requestToJoin,
     );
 
