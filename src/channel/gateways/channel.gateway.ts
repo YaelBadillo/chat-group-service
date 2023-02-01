@@ -7,7 +7,6 @@ import { Server } from 'socket.io';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 import { MembersService, UsersService } from '../../common/services';
-import { Channel } from '../../entities';
 import { VerifyChannelConnectionGateway } from '../../common/gateways';
 import { ServerToClientEvents } from '../interfaces';
 import { SocketData } from '../../common/interfaces';
