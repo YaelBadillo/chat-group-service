@@ -53,11 +53,4 @@ export class MessageGateway extends VerifyChannelConnectionGateway {
 
     client.to(createMessageDto.channelId).emit('handleMessage', message);
   }
-
-  public notifyDeleteToEachActiveMember(
-    channelId: string,
-    messageId: string,
-  ): void {
-    this.server.to(channelId).emit('handleDeletedMessage', messageId);
-  }
 }
