@@ -12,8 +12,8 @@ export class MemberDirectorService {
     this.memberBuilderService = builder;
   }
 
-  public buildOwnerInstance(user: User, channel: Channel): void {
-    this.buildMemberInstance(user.id, channel.id, user.id);
+  public buildOwnerInstance(userId: string, channelId: string): void {
+    this.buildMemberInstance(userId, channelId, userId);
     this.memberBuilderService.setRole(MemberRole.OWNER);
     this.memberBuilderService.setInvitationStatus(InvitationStatus.ACCEPTED);
     this.memberBuilderService.setRequestStatus(RequestStatus.ACCEPTED);
