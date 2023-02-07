@@ -12,36 +12,32 @@ export class MemberDirectorService {
     this.memberBuilderService = builder;
   }
 
-  public createOwnerInstance(user: User, channel: Channel): void {
-    this.createMemberInstance(user.id, channel.id, user.id);
+  public buildOwnerInstance(user: User, channel: Channel): void {
+    this.buildMemberInstance(user.id, channel.id, user.id);
     this.memberBuilderService.setRole(MemberRole.OWNER);
     this.memberBuilderService.setInvitationStatus(InvitationStatus.ACCEPTED);
     this.memberBuilderService.setRequestStatus(RequestStatus.ACCEPTED);
   }
 
-  public createInvitationInstance(
+  public buildInvitationInstance(
     userId: string,
     channelId: string,
     createdBy: string,
   ): void {
-    this.createMemberInstance(userId, channelId, createdBy);
+    this.buildMemberInstance(userId, channelId, createdBy);
     this.memberBuilderService.setRole(MemberRole.MEMBER);
     this.memberBuilderService.setInvitationStatus(InvitationStatus.SENDED);
     this.memberBuilderService.setRequestStatus(RequestStatus.ACCEPTED);
   }
 
-  public createRequestToJoinInstance(
-    userId: string,
-    channelId: string,
-    createdBy: string,
-  ): void {
-    this.createMemberInstance(userId, channelId, createdBy);
+  public buildRequestToJoinInstance(userId: string, channelId: string): void {
+    this.buildMemberInstance(userId, channelId, userId);
     this.memberBuilderService.setRole(MemberRole.MEMBER);
     this.memberBuilderService.setInvitationStatus(InvitationStatus.ACCEPTED);
     this.memberBuilderService.setRequestStatus(RequestStatus.SENDED);
   }
 
-  private createMemberInstance(
+  private buildMemberInstance(
     userId: string,
     channelId: string,
     createdBy: string,
