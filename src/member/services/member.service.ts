@@ -2,11 +2,9 @@ import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 
 import { UsersService, MembersService } from '../../common/services';
 import { Member, User } from '../../entities';
-import {
-  InvitationStatus,
-  MemberRole,
-  RequestStatus,
-} from '../../common/enums';
+import { InvitationStatus, RequestStatus } from '../../common/enums';
+import { MemberBuilderService } from '../../common/entities/builders';
+import { MemberDirectorService } from '../../common/entities/directors';
 
 @Injectable()
 export class MemberService {
@@ -15,7 +13,11 @@ export class MemberService {
   constructor(
     private readonly usersService: UsersService,
     private readonly membersService: MembersService,
-  ) {}
+    private readonly memberBuilderService: MemberBuilderService,
+    private readonly memberDirectorService: MemberDirectorService,
+  ) {
+    this.memberDirectorService.setBuilder(this.memberBuilderService);
+  }
 
   public async createInvitations(
     createdBy: string,
@@ -64,10 +66,8 @@ export class MemberService {
     userId: string,
     channelId: string,
   ): Promise<Member> {
-    const requestToJoinInstance: Member = this.createRequestToJoinInstance(
-      userId,
-      channelId,
-    );
+    this.memberDirectorService.buildRequestToJoinInstance(userId, channelId);
+    const requestToJoinInstance: Member = this.memberBuilderService.getResult();
 
     const requestToJoin: Member = await this.membersService.save(
       requestToJoinInstance,
@@ -106,63 +106,16 @@ export class MemberService {
       await this.membersService.findOneByUserIdAndChannelId(user.id, channelId);
     if (existingInvitation) return existingInvitation;
 
-    const invitationInstance = this.createInvitationInstance(
+    this.memberDirectorService.buildInvitationInstance(
       user.id,
       channelId,
       createdBy,
     );
+    const invitationInstance: Member = this.memberBuilderService.getResult();
 
     const invitation: Member = await this.membersService.save(
       invitationInstance,
     );
     return invitation;
-  }
-
-  private createInvitationInstance(
-    userId: string,
-    channelId: string,
-    createdBy: string,
-  ): Member {
-    const invitationInstance = this.createMemberInstance(
-      userId,
-      channelId,
-      createdBy,
-    );
-    invitationInstance.role = MemberRole.MEMBER;
-    invitationInstance.invitationStatus = InvitationStatus.SENDED;
-    invitationInstance.requestStatus = RequestStatus.ACCEPTED;
-
-    return invitationInstance;
-  }
-
-  private createRequestToJoinInstance(
-    userId: string,
-    channelId: string,
-  ): Member {
-    const requestToJoinInstance = this.createMemberInstance(
-      userId,
-      channelId,
-      userId,
-    );
-    requestToJoinInstance.role = MemberRole.MEMBER;
-    requestToJoinInstance.invitationStatus = InvitationStatus.ACCEPTED;
-    requestToJoinInstance.requestStatus = RequestStatus.SENDED;
-
-    return requestToJoinInstance;
-  }
-
-  private createMemberInstance(
-    userId: string,
-    channelId: string,
-    createdBy: string,
-  ) {
-    const memberInstance = new Member();
-    memberInstance.userId = userId;
-    memberInstance.channelId = channelId;
-    memberInstance.deleted = false;
-    memberInstance.createdBy = createdBy;
-    memberInstance.updatedBy = createdBy;
-
-    return memberInstance;
   }
 }
