@@ -5,12 +5,9 @@ import { ChannelsService, MembersService } from '../../common/services';
 import { CreateChannelDto, DeleteChannelDto, UpdateChannelDto } from '../dto';
 import { PasswordService } from '../../shared/password';
 import { StatusResponse } from '../../common/interfaces';
-import {
-  InvitationStatus,
-  MemberRole,
-  RequestStatus,
-} from '../../common/enums';
 import { CreateChannelResponse } from '../types';
+import { MemberBuilderService } from '../../common/entities/builders';
+import { MemberDirectorService } from '../../common/entities/directors';
 
 @Injectable()
 export class ChannelService {
@@ -18,7 +15,11 @@ export class ChannelService {
     private readonly channelsService: ChannelsService,
     private readonly membersService: MembersService,
     private readonly passwordService: PasswordService,
-  ) {}
+    private readonly memberBuilderService: MemberBuilderService,
+    private readonly memberDirectorService: MemberDirectorService,
+  ) {
+    this.memberDirectorService.setBuilder(this.memberBuilderService);
+  }
 
   public async create(
     user: User,
@@ -41,9 +42,11 @@ export class ChannelService {
       channelInstance,
     );
 
-    const memberInstance: Member = this.createMemberInstance(user, newChannel);
+    console.log(user);
+    this.memberDirectorService.buildOwnerInstance(user.id, newChannel.id);
+    const ownerInstance: Member = this.memberBuilderService.getResult();
 
-    const ownerMember: Member = await this.membersService.save(memberInstance);
+    const ownerMember: Member = await this.membersService.save(ownerInstance);
 
     return { channel: newChannel, ownerMember };
   }
@@ -93,20 +96,6 @@ export class ChannelService {
     channelInstance.updatedBy = user.id;
 
     return channelInstance;
-  }
-
-  private createMemberInstance(user: User, newChannel: Channel): Member {
-    const memberInstance: Member = new Member();
-    memberInstance.userId = user.id;
-    memberInstance.role = MemberRole.OWNER;
-    memberInstance.channelId = newChannel.id;
-    memberInstance.invitationStatus = InvitationStatus.ACCEPTED;
-    memberInstance.requestStatus = RequestStatus.ACCEPTED;
-    memberInstance.deleted = false;
-    memberInstance.createdBy = user.id;
-    memberInstance.updatedBy = user.id;
-
-    return memberInstance;
   }
 
   private updateChannelInstance(
