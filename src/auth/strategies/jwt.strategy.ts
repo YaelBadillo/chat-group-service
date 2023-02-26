@@ -2,8 +2,9 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 
-import { Strategy, ExtractJwt } from 'passport-jwt';
+import { ExtractJwt, Strategy } from 'passport-jwt';
 
+import { ExtractJwtService } from '../services';
 import { UsersService } from '../../common/services';
 import { User } from '../../entities';
 
@@ -11,11 +12,15 @@ import { User } from '../../entities';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly configService: ConfigService,
+    private readonly extractJwtService: ExtractJwtService,
     private readonly usersService: UsersService,
   ) {
     super({
       secretOrKey: configService.get<string>('jwt.secret'),
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        extractJwtService.cookieExtractor(),
+      ]),
       ignoreExpiration: false,
     });
   }
