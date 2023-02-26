@@ -5,12 +5,12 @@ import { BadRequestException } from '@nestjs/common';
 import { mock } from 'jest-mock-extended';
 import { Chance } from 'chance';
 
-import { UsersService } from '../../common/services';
+import { UsersService } from '../../../common/services';
 import { AuthService } from './auth.service';
-import { PasswordService } from '../../shared/password/password.service';
-import { userMockFactory } from '../../../test/utils/entity-mocks/user.entity.mock';
-import { User } from '../../entities';
-import { LogInResponse, SignUpResponse } from '../interfaces/responses.interface';
+import { PasswordService } from '../../../shared/password/password.service';
+import { userMockFactory } from '../../../../test/utils/entity-mocks/user.entity.mock';
+import { User } from '../../../entities';
+import { LogInResponse, SignUpResponse } from '../../interfaces/responses.interface';
 
 describe('AuthService', () => {
   let service: AuthService;

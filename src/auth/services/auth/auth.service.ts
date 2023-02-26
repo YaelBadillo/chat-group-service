@@ -1,10 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { User } from '../../entities';
-import { UsersService } from '../../common/services';
-import { PasswordService } from '../../shared/password';
-import { SignUpResponse, LogInResponse } from '../interfaces';
+import { User } from '../../../entities';
+import { UsersService } from '../../../common/services';
+import { PasswordService } from '../../../shared/password';
+import { SignUpResponse, LogInResponse } from '../../interfaces';
 
 @Injectable()
 export class AuthService {
