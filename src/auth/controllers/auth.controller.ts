@@ -1,4 +1,13 @@
-import { Body, Controller, HttpCode, Post, HttpStatus } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  HttpStatus,
+  Res,
+} from '@nestjs/common';
+
+import { Response } from 'express';
 
 import { AuthService } from '../services';
 import { Public } from '../../common/decorators';
@@ -12,14 +21,26 @@ export class AuthController {
   @Post('signup')
   @Public()
   @HttpCode(HttpStatus.CREATED)
-  public signUp(@Body() { name, password }: SignUpDto): Promise<SignUpResponse> {
+  public signUp(
+    @Body() { name, password }: SignUpDto,
+  ): Promise<SignUpResponse> {
     return this.authService.signUp(name, password);
   }
 
   @Post('login')
   @Public()
   @HttpCode(HttpStatus.OK)
-  public logIn(@Body() { name, password }: LogInDto): Promise<LogInResponse> {
-    return this.authService.logIn(name, password);
+  public async logIn(
+    @Body() { name, password }: LogInDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<LogInResponse> {
+    const logInResponse: LogInResponse = await this.authService.logIn(
+      name,
+      password,
+    );
+
+    res.cookie('access_token', logInResponse.accessToken, { httpOnly: true });
+
+    return logInResponse;
   }
 }
