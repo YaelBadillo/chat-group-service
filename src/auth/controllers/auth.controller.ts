@@ -39,6 +39,8 @@ export class AuthController {
       password,
     );
 
+    res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+    res.header('Access-Control-Allow-Credentials', 'true');
     res.cookie('access_token', logInResponse.accessToken, { httpOnly: true });
 
     return logInResponse;
