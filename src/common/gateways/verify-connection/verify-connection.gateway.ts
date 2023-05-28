@@ -38,7 +38,10 @@ export abstract class VerifyConnectionGateway
     >,
   ) {
     const token: string =
-      client.handshake.auth?.token || client.handshake.headers?.token;
+      client.handshake.auth?.token ||
+      (client.handshake.headers?.cookie &&
+        client.handshake.headers.cookie.split('=')[1]);
+    //client.handshake.auth?.token || client.handshake.headers?.token;
     if (!token) throw new UnauthorizedException('No token provided');
 
     let name: string;
@@ -60,6 +63,8 @@ export abstract class VerifyConnectionGateway
       );
 
     client.data.user = user;
+
+    this.logger.log(`User ${user.id} connected`);
   }
 
   public handleDisconnect(
