@@ -16,7 +16,14 @@ import { VerifyConnectionGateway } from '../../common/gateways';
 import { ServerToClientEvents } from '../interfaces';
 import { SocketData } from '../../common/interfaces';
 
-@WebSocketGateway({ namespace: 'member' })
+@WebSocketGateway({
+  namespace: 'member',
+  cors: {
+    origin: 'http://localhost:5173',
+    allowedHeaders: ['access_token'],
+    credentials: true,
+  },
+})
 export class MemberGateway
   extends VerifyConnectionGateway
   implements OnGatewayConnection

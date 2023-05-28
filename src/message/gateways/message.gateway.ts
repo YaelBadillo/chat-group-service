@@ -21,7 +21,14 @@ import { VerifyChannelConnectionGateway } from '../../common/gateways';
 import { ClientToServerEvents, ServerToClientEvents } from '../interfaces';
 import { SocketData } from '../../common/interfaces';
 
-@WebSocketGateway({ namespace: 'message' })
+@WebSocketGateway({
+  namespace: 'message',
+  cors: {
+    origin: 'http://localhost:5173',
+    allowedHeaders: ['access_token'],
+    credentials: true,
+  },
+})
 export class MessageGateway extends VerifyChannelConnectionGateway {
   @WebSocketServer()
   protected readonly server: Server<
