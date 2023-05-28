@@ -42,7 +42,6 @@ export class ChannelService {
       channelInstance,
     );
 
-    console.log(user);
     this.memberDirectorService.buildOwnerInstance(user.id, newChannel.id);
     const ownerInstance: Member = this.memberBuilderService.getResult();
 
@@ -53,6 +52,20 @@ export class ChannelService {
 
   public getAll(): Promise<Channel[]> {
     return this.channelsService.findAll();
+  }
+
+  public async getAllByUser(userId: string): Promise<Channel[]> {
+    const usersMembers: Member[] = await this.membersService.getAllByUserId(
+      userId,
+    );
+
+    const usersChannels: Channel[] = await Promise.all(
+      usersMembers.map(({ channelId }: Member) =>
+        this.channelsService.findOneById(channelId),
+      ),
+    );
+
+    return usersChannels;
   }
 
   public update(

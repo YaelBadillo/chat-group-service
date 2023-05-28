@@ -52,11 +52,17 @@ export class ChannelController {
     return createChannelResponse;
   }
 
-  @Get()
+  @Get('all')
   @Public()
   @HttpCode(HttpStatus.OK)
   public getAll(): Promise<Channel[]> {
     return this.channelService.getAll();
+  }
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  public getAllByUser(@UserFromRequest() user: User): Promise<Channel[]> {
+    return this.channelService.getAllByUser(user.id);
   }
 
   @Patch(':channelId')
