@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Member } from '../../../entities';
+import { InvitationStatus, RequestStatus } from '../../enums';
 
 @Injectable()
 export class MembersService {
@@ -29,6 +30,21 @@ export class MembersService {
   public async getAllByUserId(userId: string): Promise<Member[]> {
     try {
       const members: Member[] = await this.membersRepository.findBy({ userId });
+      return members;
+    } catch (error) {
+      throw new InternalServerErrorException('Members could not be found');
+    }
+  }
+
+  public async findAllByChannelIdAndAcceptedStatus(
+    channelId: string,
+  ): Promise<Member[]> {
+    try {
+      const members: Member[] = await this.membersRepository.findBy({
+        channelId,
+        invitationStatus: InvitationStatus.ACCEPTED,
+        requestStatus: RequestStatus.ACCEPTED,
+      });
       return members;
     } catch (error) {
       throw new InternalServerErrorException('Members could not be found');
