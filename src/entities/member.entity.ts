@@ -12,7 +12,7 @@ export class Member extends DatesHelper {
   userId: string;
 
   @Column({ type: 'enum', enum: MemberRole, default: MemberRole.MEMBER })
-  role: MemberRole;  
+  role: MemberRole;
 
   @Column({ type: 'varchar' })
   channelId: string;

@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 
-import { UsersService } from '../../common/services';
+import { MembersService, UsersService } from '../../common/services';
 import { User } from '../../entities';
 import { PasswordService } from '../../shared/password';
 import { SerializerService } from '../../shared/serializer';
@@ -10,6 +10,7 @@ import { StatusResponse } from '../../common/interfaces';
 export class UserService {
   constructor(
     private readonly usersService: UsersService,
+    private readonly membersService: MembersService,
     private readonly passwordService: PasswordService,
     private readonly serializerService: SerializerService,
   ) {}
@@ -75,5 +76,16 @@ export class UserService {
     await this.usersService.remove(user);
 
     return { status: 'ok', message: 'User has been successfully deleted' };
+  }
+
+  public async getAllChannelUsers(channelId: string) {
+    const members =
+      await this.membersService.findAllByChannelIdAndAcceptedStatus(channelId);
+
+    const users = await Promise.all(
+      members.map(({ userId }) => this.usersService.findOneById(userId)),
+    );
+
+    return users;
   }
 }

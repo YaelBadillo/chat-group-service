@@ -1,8 +1,12 @@
 import { Body, Controller, Delete, Get, Patch } from '@nestjs/common';
 
 import { UserService } from '../services';
-import { User } from '../../entities';
-import { UserFromRequest } from '../../common/decorators';
+import { Channel, User } from '../../entities';
+import {
+  ChannelFromRequest,
+  UserFromRequest,
+  VerifyChannel,
+} from '../../common/decorators';
 import { DeleteUserDto, UpdatePasswordDto, UpdateUserDto } from '../dto';
 import { StatusResponse } from '../../common/interfaces';
 
@@ -37,5 +41,11 @@ export class UserController {
     @UserFromRequest() user: User,
   ): Promise<StatusResponse> {
     return this.userService.deleteUser(user, password);
+  }
+
+  @Get('channel-users/:channelId')
+  @VerifyChannel()
+  public getAllByChannel(@ChannelFromRequest() { id: channelId }: Channel) {
+    return this.userService.getAllChannelUsers(channelId);
   }
 }
